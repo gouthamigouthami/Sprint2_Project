@@ -1,0 +1,59 @@
+
+if login()== success{
+    send  to enter user name and password to client
+    receive user name and password from client
+server checks if it is valid
+once vaild print login successful and display choices to client side
+
+} 
+
+in the main function
+create socket
+if binding == success
+      print binded
+else
+      print not binded
+if listen == success
+    print listen
+else
+    print exit_failure
+if accept== success
+    print connection accepted
+else
+     print connection is not accepted
+call to login function 
+while == true 
+{
+ send upload,download,adownload,Aupload commands using buffer to client
+after entering the command by client it will be received at server end
+read cmm from client 
+
+if cmd == upload 
+
+print cmd
+
+else if cmd == download 
+print cmd
+get extension
+
+else if cmd == aupload
+print cmd
+get extension
+
+else ifcomm == adownload
+print cmd
+
+
+
+else if cmd == QUIT 
+send filename and server to server
+receive status from server
+if status == true  
+     print Quitting..
+else
+      Server failed to close connection
+else
+      command should be in form of download adownload upload aupload
+
+
+
