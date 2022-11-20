@@ -6,6 +6,7 @@
 
 #include "header.h"
 using namespace std;
+int login_check=0;
 char NAME[MAXIMUM_NAME],PASSWORD[MAXIMUM_PSW],EMAIL[MAXIMUM_EMAIL],PHONE_NUMBER[MAXIMUM_PH_NO];
 class Customer{
     protected:
@@ -106,35 +107,8 @@ class Member : public Customer {
 
 
 };
-
-
-int client_connection()
-{
-int clientSocket,serverSocket , receiveMsgSize;
-
-	clientSocket = socket(AF_INET , SOCK_STREAM , 0);
-	if(clientSocket < 0)
-        {
-		cout<< "Creation of client socket failed\n" ;
-		return 0;
-        }
-	 cout<<"socked creted\n";
-
-	struct sockaddr_in serverAddr , clientAddr;
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serverAddr.sin_port = htons(port);
-	if(connect(clientSocket ,  (struct sockaddr*) & serverAddr , sizeof(serverAddr)) < 0)
-	{
-		cout<< "Connection Error...\n";
-		return 0;
-	}
-	else
-	{
-		 cout<<"Connection Established...\n";
-		 return 1;
-	}
-}
+class client {
+ protected:
 
 void newmembership(){
     fstream member;
@@ -150,10 +124,34 @@ void newmembership(){
         m1 ->setPassword();
 
 
+ cout << "\n\t-------------------------------------------------------------------------------------------------\n\n" <<
+         setw(MAXIMUM_PSW)<< "\tHello Mr/MS , " << endl << endl <<
+
+         setw(MAXIMUM_PSW)<< "Your Name is : " << m1 -> getName() << endl << endl <<
+         setw(MAXIMUM_PSW)<< "Your Password is : " << m1 -> getPassword() << endl << endl <<
+         setw(MAXIMUM_PSW)<< "Your Phone Number is : " << m1 -> getPhonenumber() << endl << endl <<
+         setw(MAXIMUM_PSW)<< "Your Email is : " << m1 -> getEmail() << endl << endl
+         << "\t --------------------------------------------------------------------------------------------------\n\n";
+         
+
+
         member << m1 ->getName() <<  '|' << m1->getEmail() << '|' << m1->getPhonenumber() <<  '|'
              << m1 ->getPassword() <<'\n';
 
        member.close();
+ login();
+/*cout<<"press 1 to login  page\n";
+  repeat:
+    int choice;
+      
+cin>>choice;
+if(choice==1)
+              membership();
+
+else
+cout<<"enter 1 only to back to menu\n";
+goto repeat;
+*/
 }
 void login(){
     fstream member1;
@@ -164,7 +162,7 @@ void login(){
 
     name_check:
     member1.open("Membership.txt",ios::in);
-    cout << "                                          Enter your name : ";
+    cout << "                                          Enter your name for login : ";
     cin >> name_input;
 
     ifstream file("Membership.txt");
@@ -202,9 +200,11 @@ void login(){
     cout << "                                          Enter  password : ";
     cin>>pass_input;
 
-     for (login_attempt = 1 ; login_attempt <= 2 ; login_attempt ++){
+     for (login_attempt = 1 ; login_attempt <= MAXIMUM_ATTEMPT ; login_attempt ++){
         if (pass_input ==password1 ){
+login_check=1;
             cout << "Login Successful !!!";
+
             break;
         }
 	 cout << endl;
@@ -214,15 +214,21 @@ void login(){
         cin>>pass_input;
 
         if (pass_input == password1){
+login_check=1;
             cout << "Login Successful !!!";
+
+                  
                 break;
         }
     }
-     if ( login_attempt == 3){
+     if ( login_attempt == MAXIMUM_ATTEMPT){
         cout << endl;
         cout << "Login Failed. Attempt 3 of 3" << endl;
+ 
+     }
         }
-        }
+public:
+
 void membership()
 {
     char resp;
@@ -246,17 +252,47 @@ void membership()
       else{
         login();
     }
+     
 }
+};
 
 int main()
 {
+	client OBJ;
 
-if(client_connection())
+int clientSocket,serverSocket , receiveMsgSize;
+
+	clientSocket = socket(AF_INET , SOCK_STREAM , 0);
+	if(clientSocket < 0)
+        {
+		cout<< "Creation of client socket failed\n" ;
+		return 0;
+        }
+	 cout<<"socked creted\n";
+
+	struct sockaddr_in serverAddr , clientAddr;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_port = htons(port);
+	if(connect(clientSocket ,  (struct sockaddr*) & serverAddr , sizeof(serverAddr)) < 0)
+	{
+		cout<< "Connection Error...\n";
+		return 0;
+	}
+	else
+	{
+		 cout<<"Connection Established...\n";
+
+       OBJ.membership();
+     if(login_check==1){
+    cout<<"successfull\n";
+    send(clientSocket,&login_check,sizeof(int),0);
+}
+else
 {
-     	
-membership();
+send(clientSocket,&login_check,sizeof(int),0);
+}
+
 
 }
-	 
-
 }

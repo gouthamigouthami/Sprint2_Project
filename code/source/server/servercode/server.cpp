@@ -5,19 +5,18 @@
 #include<stdlib.h>
 #include "header.h"
 using namespace std;
-int server_connection()
+int main()
 {
-
-
+int login_check=0;
 	int serverSocketHandler = socket(AF_INET , SOCK_STREAM , 0);
 	//creating a socket and assigning it to the socket handler
 	if(serverSocketHandler < 0)
         {
        // socket methode return -1 if the creation was not successful
-	cout<< "Socket creation has failed.";
+	cout<< "Socket creation has failed.\n";
 		return 0;
 	    } 
-           cout<<"Socket Created.";
+           cout<<"Socket Created.\n";
 	struct sockaddr_in serverAddr , clientAddr;
 	//specifying address and type for the server to operate under
 	serverAddr.sin_family = AF_INET;
@@ -26,41 +25,40 @@ int server_connection()
 	int bindStatus = bind(serverSocketHandler , (struct sockaddr*) & serverAddr , sizeof(serverAddr));
 	if(bindStatus < 0)
     {
-		cout<<"Socket binding has failed";
+		cout<<"Socket binding has failed\n";
 		return 0;
 	}
-      cout<<"Socket Binding Succesfull"; 
+      cout<<"Socket Binding Succesfull\n"; 
 	//listen to the client while others are waiting in queue of size 5
 	int listenStatus = listen(serverSocketHandler , client_listen );
 	if(listenStatus < 0)
         {	// when queue is full listen fails
-		cout<< "Listner has failed";
+		cout<< "Listner has failed\n";
 		return 0;
         }
-cout<<"Listening ";
-cout<<"...Waiting for connections... ";
+cout<<"Listening\n";
+cout<<"...Waiting for connections... \n";
 	
 	int clientSocketHandler;
 	socklen_t len = sizeof(clientAddr);
 	int connection;
 	if((connection = accept(serverSocketHandler , (struct sockaddr*) & clientAddr , &len)) < 0)
     {
-		cout<< "Server didn't accept the request." ;
+		cout<< "Server didn't accept the request.\n" ;
 		return  0;
 	}
 	else
     {
-		cout<< "Server accepted the request. " ;
-		return 1;
-	}
-}
-int main()
-{
- if( server_connection())
- {
-  cout<<"suceesfull"<<endl;
+		cout<< "Server accepted the request.\n " ;
 	
- } 
+	
+
+recv(connection,&login_check,sizeof(int),0);
+ if(login_check==1){
+cout<<"logined\n";
+}
+
+}
  return 0;
 }
 
