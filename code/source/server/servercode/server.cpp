@@ -3,11 +3,8 @@
 #include<arpa/inet.h>
 #include <unistd.h>
 #include<stdlib.h>
+#include "header.h"
 using namespace std;
-#define MAX 500
-#define port 9002
-#define size 100
-#define client_listen 5
 int server_connection()
 {
 
