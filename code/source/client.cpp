@@ -1,9 +1,5 @@
 #include<bits/stdc++.h>
-/*#include<sys/socket.h>
-#include<arpa/inet.h>
-#include <unistd.h>
 #include<fstream>
-*/
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -19,8 +15,8 @@
 #include <dirent.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
-#define path "./client_files/"
-
+/* #define path "./client_files/"
+#include "../include/Logger.h"*/
 
 #include "client_header.h"
 using namespace std;
@@ -31,7 +27,7 @@ class Customer{
         string name, email, phone_number;
     public:
         void setName(){
-            cout<< "                  Enter your name : ";
+            LOG_INFO("Enter your name : ");
             cin.ignore();
             getline(cin, name);
             cout << endl;
@@ -40,7 +36,7 @@ class Customer{
         void setEmail(){
             int valid_email = 0;
             char temp;
-            cout << "                  Enter your email address: ";
+            LOG_INFO("Enter your email address: ");
             cin >> email;
             cout << endl;
 
@@ -54,7 +50,7 @@ class Customer{
             }
 
             while (valid_email != 1){
-                cout << "               Enter a valid email address: ";
+                LOG_ERROR("Enter a valid email address: ");
                 cin.ignore();
                 cin >> email;
                 cout << endl;
@@ -69,14 +65,14 @@ class Customer{
         }
 
         void setPhonenumber(){
-            cout << "                  Enter your phone number : ";
+            LOG_INFO("Enter your phone number : ");
             cin >> phone_number;
 
             int phone_length = phone_number.length();
 
-            while (phone_length != 10){
+            while (phone_length != phnum_limit){
                cout << endl;
-               cout << "                Enter a valid phone number: ";
+               LOG_ERROR("Enter a valid phone number: ");
                cin >> phone_number;
                phone_length = phone_number.length();
             }
@@ -104,16 +100,16 @@ class Member : public Customer {
 
             char password_1[MAXIMUM_PSW];
              passwordset:
-            cout << "  ENTER YOUR PASSWORD : ";
+            LOG_INFO("ENTER YOUR PASSWORD : ");
             cin >> password;
             string pw = password;
-            cout << "\n  REENTER YOUR PASSWORD :";
+            LOG_INFO("\n  REENTER YOUR PASSWORD :");
             cin >> password_1;
             string pw1 = password_1;
             if(pw1==pw){
-              cout << "\n  Your password set. you are a member now !!\n";}
+             LOG_INFO (" Your password set. you are a member now !!");}
               else{
-               cout << "\n  Your password does not match. Try again !!\n";
+               LOG_ERROR( " Your password does not match. Try again !!");
               goto passwordset;}
 
         }
@@ -158,18 +154,6 @@ void newmembership(){
 
        member.close();
  login();
-/*cout<<"press 1 to login  page\n";
-  repeat:
-    int choice;
-      
-cin>>choice;
-if(choice==1)
-              membership();
-
-else
-cout<<"enter 1 only to back to menu\n";
-goto repeat;
-*/
 }
 void login(){
     fstream member1;
@@ -180,7 +164,7 @@ void login(){
 
     name_check:
     member1.open("Membership.txt",ios::in);
-    cout << "                                          Enter your name for login : ";
+    LOG_INFO(" Enter your name for login : ");
     cin >> name_input;
 
     ifstream file("Membership.txt");
@@ -206,7 +190,7 @@ void login(){
     member1.close();
     if ( success != 1 ){
         cout << endl;
-        cout << "                                  Your Name not found !!!"<< endl;
+        LOG_ERROR("Your Name not found !!!");
 
         goto name_check;
     }
@@ -215,25 +199,25 @@ void login(){
 
 
     cout << endl;
-    cout << "                                          Enter  password : ";
+    LOG_INFO("Enter  password : ");
     cin>>pass_input;
 
      for (login_attempt = 1 ; login_attempt <= MAXIMUM_ATTEMPT ; login_attempt ++){
         if (pass_input ==password1 ){
 login_check=1;
-            cout << "Login Successful !!!";
+            LOG_INFO("Login Successful !!!");
 
             break;
         }
 	 cout << endl;
         cout << "Login Failed. Attempt " << login_attempt  << " of 3" << endl;
-        cout << "Please re-enter Password: " ;
+        LOG_ERROR ("Please re-enter Password: ") ;
 
         cin>>pass_input;
 
         if (pass_input == password1){
 login_check=1;
-            cout << "Login Successful !!!";
+           LOG_INFO( "Login Successful !!!");
 
                   
                 break;
@@ -241,7 +225,7 @@ login_check=1;
     }
      if ( login_attempt == MAXIMUM_ATTEMPT){
         cout << endl;
-        cout << "Login Failed. Attempt 3 of 3" << endl;
+        LOG_ERROR("Login Failed. Attempt 3 of 3");
  
      }
         }
@@ -259,7 +243,7 @@ void membership()
 
     while ((resp != 'a') && (resp != 'b') )
     {
-        cout << "\nEnter a valid response: ";
+        LOG_ERROR( "Enter a valid response: ");
         cin >> resp;
     }
 
@@ -273,37 +257,13 @@ void membership()
      
 }
 };
-
-void getMyIP(char ip[]){  // Function to get the IP.
-	/* Variables to Store the IP address of the Machine on which Client is running. */
-	struct ifaddrs * ipAddrstr=NULL;
-    struct ifaddrs * ifa=NULL;
-    void * tmpAddrPtr=NULL;
-
-    getifaddrs(&ipAddrstr);
-
-    for (ifa = ipAddrstr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (!ifa->ifa_addr) {
-            continue;
-        }
-        if (ifa->ifa_addr->sa_family == AF_INET) { // check it is IP4
-            // is a valid IP4 Address
-            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-            char addressBuffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-            if(strncmp(ifa->ifa_name,"wlp",3)==0){
-            	strcpy(ip,addressBuffer);
-            }
-        }
-    }
-}
 void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
     struct sockaddr_in clientAddr;
     int clientfd;
     // creating data socket for data connection 
     clientfd = socket(AF_INET,SOCK_STREAM,0);
     if(clientfd < 0){
-        cout<<"Error in creating socket for data connection\n";
+        LOG_ERROR("Error in creating socket for data connection");
         return;
     }
     memset(&clientAddr,0,sizeof(clientAddr));
@@ -314,22 +274,22 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
     //binding the socket with the corresponding data port
     int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
     if(binding < 0){
-        cout<<"Error in binding in PUT\n";
+       LOG_ERROR("Error in binding in PUT");
         return;
     }
     //listening for the server request 
-    int lis = listen(clientfd,20);
+    int lis = listen(clientfd,max_listen);
     if(lis < 0){
-        cout<<"Error in listening in PUT\n";
+        LOG_ERROR("Error in listening in PUT");
         return;
     }
     struct sockaddr_in serverAddr;
     socklen_t l = sizeof(serverAddr);
     // accepting the request from the server
     int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&l);
-	cout<<"Accepted\n";
+	LOG_INFO("Accepted");
     int already_exist = 0,overwrite = 1,filehandle;
-    char filename_path[50];
+    char filename_path[filepath_size];
     strcpy(filename_path,path);
     strcat(filename_path,filename);
     filehandle = open(filename_path,O_RDONLY);
@@ -340,13 +300,13 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
         cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
         l:scanf("%d",&overwrite);
         if(overwrite != 0 && overwrite != 1){
-            cout<<"Invalid type 0 or 1\n";
+            LOG_ERROR("Invalid type 0 or 1");
             goto l;
         }
     }
     //sending the overwrite option over control connection 
     send(sockfd,&overwrite,sizeof(int),0);
-	char data[10];
+	char data[data_size];
 	memset(data,0,sizeof(data));
     if(overwrite == 1){
 
@@ -355,15 +315,15 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
         stat(filename_path,&obj);
         size = obj.st_size;
 		sprintf(data,"%d",size);
-		send(sockfd,data,10,0);
+		send(sockfd,data,data_size,0);
         //send(sockfd,&size,sizeof(int),0);
 
         sendfile(acc,filehandle,NULL,size);
         recv(sockfd,&status,sizeof(int),0);
         if(status){
-            cout<<"File successful PUT in the server\n";
+            LOG_INFO("File successful PUT in the server");
         }
-        else cout<<"File not PUT successfully in the server\n";
+        else LOG_ERROR("File not PUT successfully in the server");
     }
     close(clientfd);
     close(acc);
@@ -375,14 +335,14 @@ void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,
 
     int size,filehandle,status;
     int already_exist = 0,overwrite = 1;
-    char filename_path[50];
+    char filename_path[filepath_size];
     strcpy(filename_path,path);
     strcat(filename_path,filename);
 
-    char data[10];
+    char data[data_size];
     memset(data,0,sizeof(data));
     //recv(sockfd,&size,sizeof(int),0);
-    recv(sockfd,data,10,0);
+    recv(sockfd,data,data_size,0);
     size = atoi(data);
    
 
@@ -393,7 +353,7 @@ void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,
             cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
             l:scanf("%d",&overwrite);
             if(overwrite != 0 && overwrite != 1){
-                    printf("Invalid type 0 or 1");
+                    LOG_ERROR("Invalid type 0 or 1");
                     goto l;
             }
         }
@@ -412,13 +372,13 @@ void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,
             status=write(filehandle, receive_file, size);
             close(filehandle);
             if(status){
-                cout<<"File successful GET in the server\n";
+                LOG_INFO("File successful GET in the server");
             }
-            else cout<<"File not GET successfully in the server\n";
+            else LOG_ERROR("File not GET successfully in the server");
         }
     }
     else{
-        cout<<"No such file exists in server\n";
+        LOG_ERROR("No such file exists in server");
     }
     return;
 }
@@ -430,7 +390,7 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
     // creating data socket for data connection 
     clientfd = socket(AF_INET,SOCK_STREAM,0);
     if(clientfd < 0){
-        cout<<"Error in creating socket for data connection\n";
+        LOG_ERROR("Error in creating socket for data connection");
         return;
     }
     memset(&clientAddr,0,sizeof(clientAddr));
@@ -440,13 +400,13 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
     //binding the socket with the corresponding data port
     int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
     if(binding < 0){
-        cout<<"Error in binding in PUT\n";
+        LOG_ERROR("Error in binding in PUT");
         return;
     }
     //listening for the server request
-    int lis = listen(clientfd,20);
+    int lis = listen(clientfd,listen_size);
     if(lis < 0){
-        cout<<"Error in listening in PUT\n";
+        LOG_ERROR("Error in listening in PUT");
         return;
     }
     struct sockaddr_in serverAddr;
@@ -456,15 +416,15 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
 
     int size,filehandle,status;
     int already_exist = 0,overwrite = 1;
-    char filename_path[50];
+    char filename_path[filepath_size];
     strcpy(filename_path,path);
     strcat(filename_path,filename);
 
-	char data[10];
+	char data[data_size];
 	memset(data,0,sizeof(data));
     //recv(sockfd,&size,sizeof(int),0);
     //receving the size of the file
-	recv(sockfd,data,10,0);
+	recv(sockfd,data,data_size,0);
 	size = atoi(data);
 	
 
@@ -476,7 +436,7 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
             l:
 	    scanf("%d",&overwrite);
             if(overwrite != 0 && overwrite != 1){
-                    cout<<"Invalid type 0 or 1";
+                    LOG_ERROR("Invalid type 0 or 1");
                     goto l;
             }
         }
@@ -494,64 +454,65 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
             status=write(filehandle, receive_file, size);
             close(filehandle);
             if(status){
-                cout<<"File successful GET in the server\n";
+                LOG_INFO("File successful GET in the server");
             }
-            else cout<<"File not GET successfully in the server\n";
+            else LOG_ERROR("File not GET successfully in the server");
         }
     }
     else{
-        cout<<"No such file exists in server\n";
+        LOG_INFO("No such file exists in server");
     }
     close(clientfd);
     close(acc);
     return;
 }
 
-int main(int argc,char *argv[]){
-    int sockfd;
-	time_t t;
-	srand((unsigned) time(&t));
-    struct sockaddr_in serverAddr;
-   
-   
-    //creating control socket for the control connection
-    sockfd = socket(AF_INET,SOCK_STREAM,0);
-    if(sockfd < 0){
-       cout<<"Error in creating socket for control connection\n";
-        return 0;
-    }
-    memset(&serverAddr,0,sizeof(serverAddr));
-    // getting the server IP address from the command line input 
-   // unsigned long int ip = inet_addr(argv[1]);
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serverAddr.sin_port = htons(8000);
-    //sending connect request to the server for control connection
-    int conn = connect(sockfd,(struct sockaddr*) &serverAddr,sizeof(serverAddr));
-    if(conn < 0){
-        cout<<"error in connection\n";
-        return 0;
-    }
-client OBJ;
-OBJ.membership();
+int main()
+{
+LOG_INIT();
+	client OBJ;
 
-  write(sockfd,&login_check,sizeof(int));
+int sockfd;
 
-if(login_check==1){
+	sockfd = socket(AF_INET , SOCK_STREAM , 0);
+	if(sockfd < 0)
+        {
+		LOG_INFO("Creation of client socket failed") ;
+		return 0;
+        }
+	 LOG_INFO("socked creted");
 
-    while(1){
-        char filename[50],comm[20],filename_path[50];
-        cout<<"Enter the choice: command <filename>\n";
+	struct sockaddr_in serverAddr ;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_port = htons(port);
+	if(connect(sockfd ,  (struct sockaddr*) & serverAddr , sizeof(serverAddr)) < 0)
+	{
+		LOG_ERROR("Connection Error...");
+		return 0;
+	}
+	else
+	{
+		 LOG_INFO("Connection Established...");
+
+       OBJ.membership();
+     if(login_check==1){
+    LOG_INFO("successfull");
+    LOG_INFO("GOOD TO GO ");
+    send(sockfd,&login_check,sizeof(int),0);
+while(1){
+        char filename[filename_size],comm[buffer_size],filename_path[filepath_size];
+        LOG_INFO("Enter the choice: command <filename>");
         // Taking input for command and filename 
         scanf("%s %s",comm,filename);
 
-        char buffer_comm[100],buffer_soc[20];
+        char buffer_comm[cmd_size],buffer_soc[buffer_size];
         memset(buffer_comm,0,sizeof(buffer_comm));
 		memset(buffer_soc,0,sizeof(buffer_soc));
         strcpy(buffer_comm,comm);
         strcpy(filename_path,path);
         strcat(filename_path,filename);
-		char newname[20];
+		char newname[buffer_size];
 		memset(newname,0,sizeof(newname));
         if(strcmp(comm,"PUT") == 0){
             // checking whether the file exists or not in the client side
@@ -560,7 +521,7 @@ if(login_check==1){
             }
             else{
             // sending filename to the server
-			send(sockfd,filename,20,0);
+			send(sockfd,filename,buffer_size,0);
             // generating an arbitrary port number
             unsigned long int dataPort = rand()%1000;
 			strcat(buffer_comm,":");
@@ -573,13 +534,13 @@ if(login_check==1){
             //sending the command and data port over the control connection 
             send(sockfd,buffer_comm,sizeof(buffer_comm),0);
             data_connection_send(dataPort,sockfd,filename);
-            cout<<"File PUT successful\n";
+            LOG_INFO("File PUT successful");
             }
         }
         else if(strcmp(comm,"GET") == 0){
 
             //sending filename to the server 
-			send(sockfd,filename,20,0);
+			send(sockfd,filename,buffer_size,0);
             //generating an arbitrary port number 
             unsigned long int dataPort = rand()%1000;
 			strcat(buffer_comm,":");
@@ -612,7 +573,7 @@ if(login_check==1){
 				if(fextension == NULL) continue;
 				else if(!strcmp(filename,fextension)){  //comparing the extension with the given extension
                     //sending filename to the server 
-					send(sockfd,newname,20,0);
+					send(sockfd,newname,buffer_size,0);
                     //generating an arbitrary port number 
 		            unsigned long int dataPort = rand()%1000;
 					memset(buffer_comm,0,sizeof(buffer_comm));
@@ -647,14 +608,14 @@ if(login_check==1){
             //sending command and port number 
             send(sockfd,buffer_comm,sizeof(buffer_comm),0);
 			int ready ;
-			char newname[20];
+			char newname[buffer_size];
             memset(buffer_comm,0,sizeof(buffer_comm));
             struct sockaddr_in clientAddr;
             int clientfd;
             //creating socket for the control connection
             clientfd = socket(AF_INET,SOCK_STREAM,0);
             if(clientfd < 0){
-                cout<<"Error in creating socket for data connection\n";
+                LOG_ERROR("Error in creating socket for data connection");
             }
             memset(&clientAddr,0,sizeof(clientAddr));
             clientAddr.sin_family = AF_INET;
@@ -663,12 +624,12 @@ if(login_check==1){
             //binding the socket with the corresponding data port
             int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
             if(binding < 0){
-                cout<<"Error in binding in PUT\n";
+                LOG_ERROR("Error in binding in PUT");
             }
             //listening for the server request
-            int lis = listen(clientfd,20);
+            int lis = listen(clientfd,listen_size);
             if(lis < 0){
-                cout<<"Error in listening in PUT\n";
+                LOG_ERROR("Error in listening in PUT");
             }
             struct sockaddr_in serverAddr;
             socklen_t l = sizeof(serverAddr);
@@ -681,18 +642,18 @@ if(login_check==1){
                
 				if(ready == 0) break;
 				memset(newname,0,sizeof(newname));
-				recv(sockfd,newname,20,0);
+				recv(sockfd,newname,buffer_size,0);
 				data_connection_receive_mget(acc,dataPort,sockfd,newname);
 
 			}
             close(clientfd);
             close(acc);
-			cout<<"File MGET successful\n";
+			LOG_INFO("File MGET successful");
         }
         else if(strcmp(comm,"QUIT")==0)
             {
                 // strcpy(buffer, "quit");
-                send(sockfd,filename,20,0);
+                send(sockfd,filename,buffer_size,0);
                 unsigned long int dataPort = rand()%1000;
                 strcat(buffer_comm,":");
                 dataPort = dataPort + (long int)10000;
@@ -703,19 +664,27 @@ if(login_check==1){
                 strcat(buffer_comm,"#");
                 send(sockfd,buffer_comm,sizeof(buffer_comm),0);
                 int status = 0;                
-                recv(sockfd, &status, 100, 0);                  
+                recv(sockfd, &status, cmd_size, 0);                  
                 if(status)
                 {
-                    cout<<"Quitting..\n";
+                    LOG_INFO("Quitting..");
                     exit(0);
                 }
-                cout<<"Server failed to close connection\n";      
+                LOG_ERROR("Server failed to close connection");      
             }
         else{
-            cout<<"command should be in form of GET,PUT,MGET,MPUT";
+            LOG_ERROR("command should be in form of GET,PUT,MGET,MPUT");
         }
     }
-}else
-cout<<"Login failed\n";
 
+}
+else
+{
+send(sockfd,&login_check,sizeof(int),0);
+LOG_ERROR("client failed to login");
+}
+
+
+}
+ LOG_DEINIT();
 }

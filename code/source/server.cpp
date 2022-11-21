@@ -15,14 +15,11 @@
 #include <sys/stat.h>
 #include <sys/sendfile.h>
 #include <dirent.h>
-using namespace std;
-#define sa struct sockaddr_in
-#define  maxlen 100
-#define listen_queue 50
-#define u_int unsigned int
+#include "server_header.h"
+/*#include "../include/Logger.h"
 #define server_path "./server_files/"
-
-
+*/
+using namespace std;
 void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int port, char* filename){
 	sa clientAddress2;
 
@@ -62,13 +59,13 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 		size = 0;
 		sprintf(data,"%d",size);
 		
-		send(client_socket,data,10,0);
+		send(client_socket,data,data_size,0);
 	}
 	else{
 		int ow = 0;
 		sprintf(data,"%d",size);
 		//sending the size of the file
-		send(client_socket,data,10,0);
+		send(client_socket,data,data_size,0);
 		// receiving the overwrite option 
 		recv(client_socket,&ow,sizeof(int),0);
 		if(ow == 1){
@@ -87,20 +84,20 @@ void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_
 	filehandle = open(file,O_RDONLY);
 	size = object.st_size;
 	
-	char data[10];
+	char data[data_size];
 	memset(data,0,sizeof(data));
 	//if file doesnt exist	
 	if(filehandle == -1){
 		size = 0;
 		sprintf(data,"%d",size);
 		
-		send(client_socket,data,10,0);
+		send(client_socket,data,data_size,0);
 	}
 	else{
 		int ow = 0;
 		sprintf(data,"%d",size);
 		//sending the size of the file
-		send(client_socket,data,10,0);
+		send(client_socket,data,data_size,0);
 		// receiving the overwrite option
 		recv(client_socket,&ow,sizeof(int),0);
 		if(ow == 1){
@@ -148,7 +145,7 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
         send(client_socket,&exists,sizeof(int),0);            
     }
     recv(client_socket,&overwrite,sizeof(int),0);  //receving overwrite option 
-	char data[10];
+	char data[data_size];
 	memset(data,0,sizeof(data));
 	// Taking appropriate action according to the overwrite value 
     if(overwrite == 1)
@@ -159,7 +156,7 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
     		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, 666);     
 
     	// receving size of the file
-		recv(client_socket,data,10,0);
+		recv(client_socket,data,data_size,0);
 		size = atoi(data);
 		// receving the file and sending status
         receiveFile = (char*)malloc(size*sizeof(char));
@@ -172,111 +169,82 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
     close(client_data_socket);
 }
 
-void getMyIP(char ip[]){  // Function to get the IP.
-	/* Variables to Store the IP address of the Machine on which SERVER is running. */
-	struct ifaddrs * ipAddrstr=NULL;
-    struct ifaddrs * ifa=NULL;
-    void * tmpAddrPtr=NULL;
-
-    getifaddrs(&ipAddrstr);
-
-    for (ifa = ipAddrstr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (!ifa->ifa_addr) {
-            continue;
-        }
-        if (ifa->ifa_addr->sa_family == AF_INET) { // check it is IP4
-            // is a valid IP4 Address
-            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-            char addressBuffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-            if(strncmp(ifa->ifa_name,"eth0",3)==0){
-            	strcpy(ip,addressBuffer);
-            }
-        }
-    }
-}
-
-int main(int argc, char *argv[])
+int main()
 {
-	int login_check=0;
-	sa serverAddress;
-	// creating a socket for the server (Control socket for control connection)
-	int server_socket = socket(AF_INET,SOCK_STREAM,0);
-	if(server_socket == -1){ 
-		cout<<"Error in Opening the Listening Port.\n";
+int login_check=0;
+	int server_socket = socket(AF_INET , SOCK_STREAM , 0);
+	//creating a socket and assigning it to the socket handler
+	if(server_socket < 0)
+        {
+       // socket methode return -1 if the creation was not successful
+	cout<< "Socket creation has failed.";
 		return 0;
-	}
-	//initiating IP address for server 
-      
-
-    //unsigned long int IP = inet_addr(ip);   
-    memset(&serverAddress,0, sizeof(serverAddress));
-
+	    } 
+          cout<<"Socket Created.\n";
+	struct sockaddr_in serverAddress , clientAddress;
+	//specifying address and type for the server to operate under
 	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(9000);
 	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-        serverAddress.sin_port =htons(8000);
-
-	// binding the Port and control socket
-
-	int status_bind = bind(server_socket,(struct sockaddr*) &serverAddress,sizeof(struct sockaddr_in));
-
-	if(status_bind == -1){
-		cout<<"Socket Bind Error\n";
+	int bindStatus = bind(server_socket , (struct sockaddr*) & serverAddress , sizeof(serverAddress));
+	if(bindStatus < 0)
+    {
+	cout<<"Socket binding has failed\n";
 		return 0;
 	}
-
-//	
-	//printf("Server started on IP: < %s > at Port: < %s >\n",ip,argv[1]);
-
-	//server is listening(i.e waiting for the client to send request)
-
-	int status_listen = listen(server_socket,listen_queue);
-	if(status_listen == -1){
-		cout<<"Listening error at the PORT\n";
+      cout<<"Socket Binding Succesfull\n"; 
+	//listen to the client while others are waiting in queue of size 5
+	int listenStatus = listen(server_socket , client_listen );
+	if(listenStatus < 0)
+        {	// when queue is full listen fails
+		cout<< "Listner has failed\n";
 		return 0;
-	}
-
-
-
-	sa clientAddress;
-	char buffer[maxlen],command[5], filename[20]; //initiating variables for data buffer,command buffer,file buffer
+        }
+cout<<"Listening\n";
+cout<<"...Waiting for connections... ";
+	
+	int client_socket;
+	socklen_t len = sizeof(clientAddress);
+         char buffer[maxlen],command[command_size], filename[file_size]; //initiating variables for data buffer,command buffer,file buffer
 	unsigned long int PORT = 0;
 	int filehandle; 
 	char socket_buffer[maxlen];
 	memset(buffer,0,maxlen);
 	memset(socket_buffer,0,maxlen);
-	socklen_t length = sizeof(sa);
-	cout<<"server waiting to accept\n";
+	
+	if((client_socket = accept(server_socket , (struct sockaddr*) & clientAddress , &len)) < 0)
+    {
+		cout<< "Server didn't accept the request.\n" ;
+		return  0;
+	}
+	else
+    {
+		cout<< "Server accepted the request.\n " ;
+	
+	
 
-	//accepting the request from the client
-	int client_socket = accept(server_socket,(struct sockaddr*) &clientAddress,&length);
+recv(client_socket,&login_check,sizeof(int),0);
+ if(login_check==1){
+cout<<"logined\n";
 
-
-	if (client_socket < 0){
-		cout<<"Error in accepting socket\n";
-   	}
-	cout<<"accepted\n";
-	 recv(client_socket, &login_check, sizeof(int), 0);
-
-	if(login_check==1){
-	while(1){
+while(1){
 
 		// receiving file name or extension
-		recv(client_socket,filename,20,0);
+		recv(client_socket,filename,file_size,0);
 		cout<<"Received file name : "<<filename<<"\n";
 		// receiving control information
 		recv(client_socket,buffer,maxlen,0);
 		
-		int i=0 ,j;
-		int m = 0;
-		for(i = 0; buffer[i]!=':';i++){
-			command[m++] = buffer[i];
+		int cmd_read=0 ,read_;
+		int store = 0;
+		for(cmd_read = 0; buffer[cmd_read]!=':';cmd_read++){
+			command[store++] = buffer[cmd_read];
 		}
-		command[m]='\0';
+		command[store]='\0';
 		cout<<"Received command : "<<command<<endl;
-		int k = 0;
-		for(j = i+1;buffer[j]!='#';j++){
-			socket_buffer[k++] = buffer[j];
+		int check_ = 0;
+		for(read_ = cmd_read+1;buffer[read_]!='#';read_++){
+			socket_buffer[check_++] = buffer[read_];
 		}
 		//printf("New data connection port : %s\n",socket_buffer);
 		
@@ -329,7 +297,7 @@ int main(int argc, char *argv[])
 	        struct dirent *dir;
 	        d = opendir(server_path);
 	        int ready=1;
-			char newname[20];
+			char newname[file_size];
 			while ((dir = readdir(d)) != NULL){
 				fname=dir->d_name;
 				memset(newname,0,sizeof(newname));
@@ -339,7 +307,7 @@ int main(int argc, char *argv[])
 				if (strcmp(filename,fextension)==0){   // comparing the externsion with the given extension
 					cout<<"Sending" << newname<<"file\n";
 	                send(client_socket, &ready, sizeof(int), 0);
-	                send(client_socket,newname,20,0);
+	                send(client_socket,newname,file_size,0);
 					dataConnectionSend_mget(client_data_socket,clientAddress,client_socket,PORT,newname);
 				}
 			}
@@ -352,13 +320,17 @@ int main(int argc, char *argv[])
 		 else if(!strcmp(command, "QUIT"))
 	        {
 	            int status = 1;
-	            send(client_socket, &i, sizeof(int), 0);           
+	            send(client_socket, &cmd_read, sizeof(int), 0);           
 	            break;
 	        }
 
 	}
-	}
-	else
-		cout<<"\nLogin Failed\n";
-	return 0;
+
+}
+else{
+cout<<"NOt loggined unable to proceed any file downloads\n";
+}
+
+}
+ return 0;
 }
