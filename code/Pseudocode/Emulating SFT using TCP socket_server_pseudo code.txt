@@ -1,0 +1,84 @@
+void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int port, char* filename){
+open serverpath 
+if file doesnt exist
+send  data fromm server to client
+else
+sending the size of the file
+receiving the overwrite option
+if overwrite ==0
+send data to client  
+close socket
+}
+void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_socket, unsigned long int port, char* filename){
+open serverpath 
+if file doesnt exist
+send  data fromm server to client
+else
+sending the size of the file
+receiving the overwrite option
+if overwrite ==0
+send data to client  
+close socket
+}
+void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int port, char* filename){
+checking if the file already exists or not 
+/receving overwrite option 
+ Taking appropriate action according to the overwrite value 
+receving size of the file
+receving the file and sending status
+close socket
+}
+
+in the main function
+create socket
+if binding == success
+      print binded
+else
+      print not binded
+if listen == success
+    print listen
+else
+    print exit_failure
+if accept== success
+    print connection accepted
+else
+     print connection is not accepted
+
+call to login function 
+if (login ==success)
+initiating variables for data buffer,command buffer,file buffer
+receiving file name  and command 
+while == true 
+{
+
+if(command=="GET")){
+
+ calling dataConnectionSend(clientAddress,client_socket,PORT,filename);
+}
+else if(command=="PUT")){
+			
+			dataConnectionReceive(clientAddress,client_socket,PORT,filename);
+			
+		}
+
+
+else if(command=="MGET")){
+asign random Port number
+ traversing through the directory for the files with given extension 
+getting the extension of the files
+comparing the externsion with the given extension
+print sending filename
+dataConnectionSend_mget(client_data_socket,clientAddress,client_socket,PORT,newname);
+}
+ else if(command=="QUIT"))
+
+print cmd
+get extension
+
+receive status from client
+     print Quitting..
+Server closed
+
+
+
+
