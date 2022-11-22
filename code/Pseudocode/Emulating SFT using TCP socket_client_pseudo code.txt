@@ -1,0 +1,329 @@
+class Customer{
+protected:
+string name, email, phone_number
+ public:
+void setName()
+Enter your name 
+read  name from user
+}
+void setEmail(){
+int valid_email = 0;
+char temp;
+ Enter your email address: "
+read email from user
+while valid_email != 1{
+ Enter a valid email address: ";
+read  email from user
+}
+}
+void setPhonenumber(){
+print Enter your phone number : 
+read phone_number
+int phone_length = phone_number.length();
+while (phone_length != 10){
+Enter a valid phone number: ";
+read phone_number from user
+phone_length = phone_number.length();
+}
+}
+string getName(){
+return name
+}
+string getPhonenumber()
+return phone_number;
+}
+string getEmail(){
+return email
+ }
+~Customer(){};  
+};
+
+class Member : public Customer {
+public:
+void setPassword(){
+print ENTER YOUR PASSWORD : ";
+read input password from user;
+string pw = password;
+print  REENTER YOUR PASSWORD :";
+take  password_1 from user;
+string pw1 = password_1;
+ if(pw1==pw){
+print Your password set. you are a member now !!\n";}
+else{
+print Your password does not match. Try again !!\n";
+ repeat process}
+}string getPassword(){
+            return password;
+         }
+};
+
+void login(){
+ open Membership.txt file
+print  Enter your name : 
+read name_input from user
+ifstream file("Membership.txt");
+  while (readinn entite txt file) {
+        cournt numbet of leines}
+while(raed txt to EOF)
+    {
+     get name, email,phone number and password from file
+       if ( NAME== name_input){
+          enable flag
+        }
+}
+ member1.close();
+    if (flage is not enable ){
+     
+     print   Your Name not found !!!
+   goto read input from user 
+        
+    }
+    
+   else
+   
+print Enter  password : 
+    read password from user
+for run upto maximum lin=mits i.e 3){
+        if (read password and password from file ){
+           Login Successful !!!
+            break;}
+
+      
+print Login Failed
+print Please re-enter Password: " ;
+read password from user
+if (passwrod in file password user enterd is eqal){
+           Login Successful !!!"
+                break;}}
+     if ( login_attempt == 3){
+        
+        cprint Login Failed. Attempt 3 of 3"
+        }
+        }
+class client {
+ protected:
+ 
+void newmembership(){
+open "Membership.txt"file
+// create poiter  object to class  
+Member * m1 = new Member;
+    calling m1 -> setName() and set name 
+      
+        calling m1 -> setEmail() and set eamil
+       calling  m1 -> setPhonenumber()and set phonenumber
+         calling m1 ->setPassword() set password
+   put all into text file
+  close text file
+ call membership function
+}
+void login(){
+open "Membership.txt" file
+print        Enter your name : "
+read  name_input from user
+     while(raed EOF)
+    {
+       get username password phone number and eamil
+    
+       if ( NAME== name_input){
+           flage enable
+            break;
+       }}
+   close file
+    if ( flage enabled ){
+  print             Your Name not found !!!
+else repeat process
+
+    }
+  
+print       Enter  password : 
+ raed pass_input from user
+    
+     for (run upto max limit ){
+        if (pass_input ==password1 ){
+            cout << "Login Successful !!!";
+            break;
+        }
+
+        cout << endl;
+        cout << "Login Failed. Attempt " << login_attempt  << " of 3" << endl;
+        cout << "Please re-enter Password: " ;
+       
+        cin>>pass_input;
+
+        if (pass_input == password1){
+            cout << "Login Successful !!!";
+                break;
+        }
+    }
+     if ( login_attempt == 3){
+        cout << endl;
+        cout << "Login Failed. Attempt 3 of 3" << endl;
+        
+         membership();
+        }
+        }
+ 
+
+public:
+        
+void membership()
+{
+ (A) NEW MEMBERSHIP      *(B)   LOGIN *
+read input from user
+  while ((user input !=a and user input= 'b') )
+    {print Enter a valid response: "
+       reap input from user  }
+
+    if (read response =='a')
+        
+       newmembership();
+   
+      else 
+        login();}};
+
+file_upload(pass sockfd,filename)
+{
+
+receving whether the file already exists in the server or not 
+if already exists
+file already exists in server
+print  1 for OVERWRITE \n press 0 for NO OVERWRITE\ver 
+sending the overwrite option over control connection 
+if(overwrite == 1){
+sent to server
+sent status to sever 
+if satus true
+print File successful  uppload the server
+else File not upload successfully in the server
+}
+void aupload_files(sockfd,filename){
+
+checking whether the file already exists or not 
+if exit‎
+print  file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE
+sending the overwrite option 
+if(overwrite == 1){
+open file and overwrite filename
+else
+no overriden open file and create
+receving the size of the file fomr server
+write receive file assign status
+if status is true
+Files successfully  uploaded in the server
+else
+Files not upload successfully in the server
+
+else
+No such file exists in server
+}
+void download_file(pass sockfd,filename)
+{
+check file name exit or not to server side
+if present file exist 
+else
+No such file exists in server
+checking the file already exists or not
+ if exists
+file already exists in client \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE
+if(overwrite == 1){
+open file and overwrite filename
+else
+no overriden open file and create
+print File successful downloaded in the client
+else
+File not download successfully in the client
+
+
+}
+
+void adownload_files(sockfd,filename){
+
+checking whether the file already exists or not 
+if exit‎
+print  file already exists in client \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE
+sending the overwrite option to server
+if(overwrite == 1){
+open file and overwrite filename
+else
+no overriden open file and create
+receving the size of the file from server
+receing status from server
+if status is true
+Files successfully  adownload in the server
+else
+Files not adownload successfully in the server
+
+else
+No such file exists in server
+}
+};
+
+
+in tha main function
+{
+ OBJ.membership();
+     if(login_check it true){
+   print "successfull GOOD TO GO 
+create socket
+connecting to server
+getting the server IP address from the command line input 
+sending connect request to the server for control connection
+calling login function 
+while == true 
+{
+print the command  and filename
+read command and filesname from user 
+
+if cmd is upload 
+//checking whether the file exists or not in the client side
+check_file()
+if(file name not present)
+print does not exist in client side
+else 
+sending filename to the server
+sending the command and data port over the control connection 
+send to function file_upload
+print file sent succesfully
+//
+else if cmd is download 
+sending filename to the server 
+sending the command and data port over the control connection to server
+calling a function download_file()
+///
+else if cmd is aupload
+going through all the files in the directory 
+get extension file names from client side 
+
+sending filenames to the server untill all extensiion files to sent  
+
+send file to server
+send to data_connection_send
+////
+else ifcomm is adownload
+sending file name(extension)
+
+sending command to server 
+
+get extension file names from clinet
+sending filenames to the server untill all extensiion files to download
+send to function adownload_files()
+///
+else if cmd is QUIT 
+send filename and server to server
+receive status from server
+is status is true then print  
+print Quitting..
+else
+Server failed to close connection
+else
+command should be in form of download adownload upload aupload
+exit
+
+
+
+
+
+
+
+
+
