@@ -254,9 +254,11 @@ void membership()
       else{
         login();
     }
+  
+  
      
 }
-};
+
 void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
     struct sockaddr_in clientAddr;
     int clientfd;
@@ -467,6 +469,8 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
     return;
 }
 
+};
+
 int main()
 {
 LOG_INIT();
@@ -499,10 +503,18 @@ int sockfd;
      if(login_check==1){
     LOG_INFO("successfull");
     LOG_INFO("GOOD TO GO ");
+    LOG_INFO("Try These commands:-");
+    LOG_INFO("Upload files to server using- PUT");
+    LOG_INFO("Upload all files with a specific extention using- MPUT");
+    LOG_INFO("Download files from server using- GET");
+    LOG_INFO("Download all files with a specific extention using- MGET");
+    LOG_INFO("Exit Using- QUIT");
     send(sockfd,&login_check,sizeof(int),0);
 while(1){
         char filename[filename_size],comm[buffer_size],filename_path[filepath_size];
+	LOG_INFO("Enter the commands \n 1.PUT\n 2.GET\n 3.MPUT\n 4.MGET\n 5.Quit\n");
         LOG_INFO("Enter the choice: command <filename>");
+
         // Taking input for command and filename 
         scanf("%s %s",comm,filename);
 
@@ -533,7 +545,7 @@ while(1){
 			strcat(buffer_comm,"#");
             //sending the command and data port over the control connection 
             send(sockfd,buffer_comm,sizeof(buffer_comm),0);
-            data_connection_send(dataPort,sockfd,filename);
+            OBJ.data_connection_send(dataPort,sockfd,filename);
             LOG_INFO("File PUT successful");
             }
         }
@@ -554,7 +566,7 @@ while(1){
             send(sockfd,buffer_comm,sizeof(buffer_comm),0);
 			//send(sockfd,&dataPort,sizeof(dataPort),0);
 
-            data_connection_receive(dataPort,sockfd,filename);
+            OBJ.data_connection_receive(dataPort,sockfd,filename);
 
             
         }
@@ -587,7 +599,7 @@ while(1){
 					strcat(buffer_comm,buffer_soc);
 					strcat(buffer_comm,"#");
 		            send(sockfd,buffer_comm,sizeof(buffer_comm),0);
-		            data_connection_send(dataPort,sockfd,newname);
+		            OBJ.data_connection_send(dataPort,sockfd,newname);
 		          
 				}
 			}
@@ -643,7 +655,7 @@ while(1){
 				if(ready == 0) break;
 				memset(newname,0,sizeof(newname));
 				recv(sockfd,newname,buffer_size,0);
-				data_connection_receive_mget(acc,dataPort,sockfd,newname);
+				OBJ.data_connection_receive_mget(acc,dataPort,sockfd,newname);
 
 			}
             close(clientfd);
