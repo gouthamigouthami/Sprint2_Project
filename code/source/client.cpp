@@ -694,5 +694,5 @@ LOG_ERROR("client failed to login");
 
 
 }
- LOG_DEINIT();
+ 
 }
