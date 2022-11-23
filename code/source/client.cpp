@@ -44,7 +44,7 @@ class Customer{
 
             int email_length = email.length();
 
-            for (int check=0; check<email.length(); ++check){
+            for (int check=0; check<email_length; ++check){
                 temp = email.at(check);
 		  if (temp == '@' ){
                     valid_email = 1;
@@ -57,7 +57,7 @@ class Customer{
                 cin >> email;
                 cout << endl;
 
-                for (int email_check=0; email_check<email.length(); ++email_check){
+                for (int email_check=0; email_check<email_length; ++email_check){
                   temp = email.at(email_check);
                   if (temp == '@' ){
                      valid_email = 1;
@@ -184,7 +184,7 @@ void login(){
     char pass_input[MAXIMUM_PSW];
     string line,password_input,name ,name_input, email1, password1;
     int login_attempt = 0, count = 0 ,  success=0;
-    char  resp;
+   
 
     name_check:
     member1.open("Membership.txt",ios::in);
