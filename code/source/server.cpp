@@ -218,8 +218,7 @@ cout<<"...Waiting for connections... \n";
 	int client_socket;
 	socklen_t len = sizeof(clientAddress);
          char buffer[MAXLEN],command[COMMAND_SIZE], filename[FILE_SIZE]; //initiating variables for data buffer,command buffer,file buffer
-	unsigned long int PORT = 0;
-	int filehandle; 
+	 
 	char socket_buffer[MAXLEN];
 	memset(buffer,0,MAXLEN);
 	memset(socket_buffer,0,MAXLEN);
@@ -333,7 +332,7 @@ while(1){
 		}
 		 else if(!strcmp(command, "QUIT"))
 	        {
-	            int status = 1;
+	           
 		    cout<<"Quitting...."<<endl;
 	            send(client_socket, &cmd_read, sizeof(int), 0);           
 	            break;
