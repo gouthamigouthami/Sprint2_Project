@@ -73,8 +73,10 @@ static inline char *timenow();
 #else
 ///#define PRINTFUNCTION(format, ...)      fprintf(stderr, format, __VA_ARGS__)
 #define PRINTFUNCTION(fmt, ...)      do {                                       \
+                                            LOG_INIT();
                                             fprintf(stderr, fmt, __VA_ARGS__);  \
                                             fprintf(logfile, fmt, __VA_ARGS__);  \
+                                            LOG_DEINIT();
                                         } while (0)
 #endif
 
