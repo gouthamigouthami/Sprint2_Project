@@ -1,3 +1,6 @@
+#ifndef __server_header_H__
+#define __server_header_H__
+
 #define sa struct sockaddr_in
 #define  MAXLEN 100
 #define u_int unsigned int
@@ -7,3 +10,4 @@
 #define  FILE_SIZE 20
 #include "../include/Logger.h"
 #define SERVER_PATH "./server_files/"
+#endif
