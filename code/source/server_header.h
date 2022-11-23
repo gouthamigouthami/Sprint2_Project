@@ -8,6 +8,6 @@
 #define DATA_SIZE 10
 #define COMMAND_SIZE 5
 #define  FILE_SIZE 20
-#include "../include/LOGGER.h"
+#include "../include/LOGGER.H"
 #define SERVER_PATH "./server_files/"
 #endif
