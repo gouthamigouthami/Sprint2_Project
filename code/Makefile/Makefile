@@ -28,4 +28,4 @@ client:${OBJ}/client.o
 
 
 clean:
-	rm -f *.o *~
+	rm -f *.o *.gcno
