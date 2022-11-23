@@ -20,11 +20,11 @@ void LOG_INIT(void)
     if (access(LOG_FILE_NAME, F_OK) == 0)
     {
         //printf("enter1");
-        logfile = fopen(LOG_FILE_NAME,"w+");
+        logfile = fopen(LOG_FILE_NAME,"a+");
         cnt=1;
     }
     else{
-        logfile = fopen(LOG_FILE_NAME,"a+");
+        logfile = fopen(LOG_FILE_NAME,"a");
          //printf("enter2");
     }
 }
@@ -73,11 +73,11 @@ static inline char *timenow();
 #else
 ///#define PRINTFUNCTION(format, ...)      fprintf(stderr, format, __VA_ARGS__)
 #define PRINTFUNCTION(fmt, ...)      do {                                       \
-                                            LOG_INIT();
-                                            fprintf(stderr, fmt, __VA_ARGS__);  \
-                                            fprintf(logfile, fmt, __VA_ARGS__);  \
-                                            LOG_DEINIT();
-                                        } while (0)
+                                             LOG_INIT();                          \
+                                             fprintf(stderr, fmt, __VA_ARGS__);  \
+                                             fprintf(logfile, fmt, __VA_ARGS__);  \
+                                             LOG_DEINIT();                          \
+                                         } while (0)
 #endif
 
 #define LOG_FMT             "@sftp %s | %-7s | %-15s | %s:%d | "
