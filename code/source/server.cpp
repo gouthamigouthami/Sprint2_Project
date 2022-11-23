@@ -20,7 +20,9 @@ using namespace std;
 class server{
 	public:
 	
-
+/*
+*dataConnectionsend is for GET operation i.e receiving file from server to client *
+*/
 void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int port, char* filename){
 	sa clientAddress2;
 
@@ -73,8 +75,12 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 			sendfile(client_data_socket,filehandle,NULL,size);
 		}
 	}
+	//closing socket
 	close(client_data_socket);
 }
+/*
+* dataCnnectiontoSend for receving files from server to client*
+*/
 void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_socket, unsigned long int port, char* filename){
 	int filehandle,size;
 	char file[MAXLEN];
@@ -107,6 +113,9 @@ void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_
 	}
 
 }
+	/* 
+	*dataConnectionReceive is for PUT operation i.e receving files fro client*
+	*/
 void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int port, char* filename){
 	sa clientAddress2;
 
@@ -296,13 +305,15 @@ while(1){
 			}
 			// traversing through the directory for the files with given extension 
 			char *fname;
-	        DIR *d;
+			//creating poineter variable for directory
+			
+	        DIR *directory;
 	        struct dirent *dir;
-	        d = opendir(SERVER_PATH);
+	        directory= opendir(SERVER_PATH);
 	        int ready=1;
 			char newname[FILE_SIZE];
-			while ((dir = readdir(d)) != NULL){
-				fname=dir->d_name;
+			while ((dir = readdir(directory)) != NULL){
+				fname=directory->d_name;
 				memset(newname,0,sizeof(newname));
 	            strcpy(newname,fname);
 				char* fextension = strrchr(newname, '.'); // getting the extension of the files
