@@ -1,5 +1,8 @@
+#ifndef __client_header_H__
+#define __client_header_H__
+
 #define MAX 500
-#define PORT 9000
+#define PORT 9001
 #define MAXIMUM_NAME 25
 #define MAXIMUM_PSW 25
 #define MAXIMUM_PH_NO 25
@@ -15,4 +18,3 @@
 #define LISTEN_SIZE 20
 #define PATH "./client_files/"
 #include "../include/Logger.h"
-
