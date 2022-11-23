@@ -29,7 +29,7 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 	// creating data socket for data connection 
 	int client_data_socket= socket(AF_INET,SOCK_STREAM,0);
 	if(client_data_socket==-1){
-	  cout<<"Data Socket cannot be opened\n";
+	  error("Data Socket cannot be opened");
 		return ;
 	}
 
@@ -43,7 +43,7 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 	int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
 	
 	if(status_connect<0){
-		cout<<"Connection Error\n";
+		error("Connection Errorn");
 		return ;
 	}
 	
@@ -122,7 +122,7 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
 	// creating data socket for data connection 
 	int client_data_socket= socket(AF_INET,SOCK_STREAM,0);
 	if(client_data_socket==-1){
-		cout<<"Data Socket cannot be opened\n";
+		error("Data Socket cannot be opened");
 		return ;
 	}
 
@@ -136,10 +136,9 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
 	int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
 
 	if(status_connect<0){
-		cout<<"Connection Error\n";
+		error("Connection Error");
 		return ;
 	}
-	//printf("Connection Established\n");
 	int size,status,filehandle;
 	char *receiveFile;
 	char file[MAXLEN];
@@ -192,7 +191,7 @@ server OBJ;
 	cout<< "Socket creation has failed.";
 		return 0;
 	    } 
-          cout<<"Socket Created.\n";
+          info("Socket Created.");
 	struct sockaddr_in serverAddress , clientAddress;
 	//specifying address and type for the server to operate under
 	serverAddress.sin_family = AF_INET;
@@ -201,19 +200,19 @@ server OBJ;
 	int bindStatus = bind(server_socket , (struct sockaddr*) & serverAddress , sizeof(serverAddress));
 	if(bindStatus < 0)
     {
-	cout<<"Socket binding has failed\n";
+	error("Socket binding has failed");
 		return 0;
 	}
-      cout<<"Socket Binding Succesfull\n"; 
+      info("Socket Binding Succesfull"); 
 	//listen to the client while others are waiting in queue of size 5
 	int listenStatus = listen(server_socket , CLIENT_LISTEN );
 	if(listenStatus < 0)
         {	// when queue is full listen fails
-		cout<< "Listner has failed\n";
+		error( "Listner has failed");
 		return 0;
         }
-cout<<"Listening\n";
-cout<<"...Waiting for connections... \n";
+info("Listening");
+info("...Waiting for connections... ");
 	
 	int client_socket;
 	socklen_t len = sizeof(clientAddress);
@@ -225,12 +224,12 @@ cout<<"...Waiting for connections... \n";
 	
 	if((client_socket = accept(server_socket , (struct sockaddr*) & clientAddress , &len)) < 0)
     {
-		cout<< "Server didn't accept the request.\n" ;
+		error( "Server didn't accept the request.") ;
 		return  0;
 	}
 	else
     {
-		cout<< "Server accepted the request.\n " ;
+		info( "Server accepted the request. ") ;
 	
 	
 
@@ -257,7 +256,7 @@ while(1){
 		for(read_ = cmd_read+1;buffer[read_]!='#';read_++){
 			socket_buffer[check_++] = buffer[read_];
 		}
-		//printf("New data connection port : %s\n",socket_buffer);
+		
 		
 		
 
@@ -286,7 +285,7 @@ while(1){
 			// creating data socket for data connection
 			int client_data_socket= socket(AF_INET,SOCK_STREAM,0);
 			if(client_data_socket==-1){
-				cout<<"Data Socket cannot be opened\n";
+				error("Data Socket cannot be opened");
 			}
 
 		 	bzero(&clientAddress2, sizeof(clientAddress2));
@@ -332,7 +331,7 @@ while(1){
 		 else if(!strcmp(command, "QUIT"))
 	        {
 	           
-		    cout<<"Quitting...."<<endl;
+		    info("Quitting....");
 	            send(client_socket, &cmd_read, sizeof(int), 0);           
 	            break;
 	        }
@@ -342,7 +341,7 @@ while(1){
 }
 	       
 else{
-cout<<"NOt loggined unable to proceed any file downloads\n";
+	error("NOt loggined unable to proceed any file downloads");
 }
 
 }
