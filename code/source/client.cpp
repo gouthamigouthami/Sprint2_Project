@@ -603,7 +603,7 @@ while(1){
         }
         else if(strcmp(comm,"MGET") == 0){
             //sending file name
-			send(sockfd,filename,20,0);
+			send(sockfd,filename,BUFFER_SIZE,0);
             //generating arbitrary port number
             unsigned long int dataPort = rand()%1000;
             strcat(buffer_comm,":");
