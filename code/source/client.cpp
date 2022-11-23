@@ -470,7 +470,7 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
 
 int main()
 {
-LOG_INIT();
+
 	client OBJ;
 
 int sockfd;
