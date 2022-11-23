@@ -18,3 +18,4 @@
 #define LISTEN_SIZE 20
 #define PATH "./client_files/"
 #include "../include/Logger.h"
+#endif
