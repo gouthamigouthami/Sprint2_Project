@@ -17,19 +17,24 @@
 #include <sys/stat.h>
 #include "client_header.h"
 using namespace std;
-int login_check=0;
+int LOGIN_CHECK=0;
 char NAME[MAXIMUM_NAME],PASSWORD[MAXIMUM_PSW],EMAIL[MAXIMUM_EMAIL],PHONE_NUMBER[MAXIMUM_PH_NO];
 class Customer{
     protected:
         string name, email, phone_number;
     public:
-        void setName(){
+        /*
+        * setting name
+           */
+	void setName(){
             LOG_INFO("Enter your name : ");
             cin.ignore();
             getline(cin, name);
             cout << endl;
         }
-
+           /*
+        * setting email
+           */
         void setEmail(){
             int valid_email = 0;
             char temp;
@@ -60,7 +65,10 @@ class Customer{
                 }
             }
         }
-
+	/*
+        * setting phonenumber
+           */
+                
         void setPhonenumber(){
             LOG_INFO("Enter your phone number : ");
             cin >> phone_number;
@@ -76,14 +84,22 @@ class Customer{
 
             cout << endl;
         }
+	/*
+        * returning the  name
+           */
 	 string getName(){
             return name;
         }
+	/*
+        * returning the  phone number
+           */
 
         string getPhonenumber(){
             return phone_number;
         }
-
+               /*
+           * returning the email
+           */
         string getEmail(){
             return email;
         }
@@ -93,6 +109,7 @@ class Customer{
 class Member : public Customer {
     public:
     char password[MAXIMUM_PSW];
+	/*setting password*/
     void setPassword(){
 
             char password_1[MAXIMUM_PSW];
@@ -111,16 +128,20 @@ class Member : public Customer {
 
         }
 
-
+/*returning the password*/
      string getPassword(){
             return password;
          }
 
 
 };
+/*creating client class*/
 class client {
  protected:
 
+	/*
+        * membership function for a  newmember
+          */
 void newmembership(){
     fstream member;
 
@@ -148,10 +169,16 @@ void newmembership(){
 
         member << m1 ->getName() <<  '|' << m1->getEmail() << '|' << m1->getPhonenumber() <<  '|'
              << m1 ->getPassword() <<'\n';
-
+       //closing file
        member.close();
- login();
+ /* 
+ *after finishing nwemembership registration calling to login function to login to server
+ */
+	login();
 }
+/* 
+*login for existing and new user afetr registration
+*/	
 void login(){
     fstream member1;
     char pass_input[MAXIMUM_PSW];
@@ -201,7 +228,7 @@ void login(){
 
      for (login_attempt = 1 ; login_attempt <= MAXIMUM_ATTEMPT ; login_attempt ++){
         if (pass_input ==password1 ){
-login_check=1;
+LOGIN_CHECK=1;
             LOG_INFO("Login Successful !!!");
 
             break;
@@ -213,7 +240,7 @@ login_check=1;
         cin>>pass_input;
 
         if (pass_input == password1){
-login_check=1;
+LOGIN_CHECK=1;
            LOG_INFO( "Login Successful !!!");
 
                   
@@ -227,7 +254,9 @@ login_check=1;
      }
         }
 public:
-
+/*
+*memberhip function for  reading user input foe login and new membership
+*/
 void membership()
 {
     char resp;
@@ -249,12 +278,16 @@ void membership()
        newmembership();
     }
       else{
+	      
         login();
     }
   
   
      
 }
+/*
+*data_connection_send is for sending files from client to server 
+*/
 
 void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
     struct sockaddr_in clientAddr;
@@ -283,9 +316,9 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
         return;
     }
     struct sockaddr_in serverAddr;
-    socklen_t l = sizeof(serverAddr);
+    socklen_t length = sizeof(serverAddr);
     // accepting the request from the server
-    int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&l);
+    int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
 	LOG_INFO("Accepted");
     int already_exist = 0,overwrite = 1,filehandle;
     char filename_path[FILEPATH_SIZE];
@@ -297,10 +330,10 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
 
     if(already_exist){
         cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
-        l:scanf("%d",&overwrite);
+        repeat:scanf("%d",&overwrite);
         if(overwrite != 0 && overwrite != 1){
             LOG_ERROR("Invalid type 0 or 1");
-            goto l;
+            goto repeat;
         }
     }
     //sending the overwrite option over control connection 
@@ -315,7 +348,7 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
         size = obj.st_size;
 		sprintf(data,"%d",size);
 		send(sockfd,data,DATA_SIZE,0);
-        //send(sockfd,&size,sizeof(int),0);
+        
 
         sendfile(acc,filehandle,NULL,size);
         recv(sockfd,&status,sizeof(int),0);
@@ -327,7 +360,9 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
     close(clientfd);
     close(acc);
 }
-
+/*
+* data_connection_receive_mget is for receiving all user choice extension files from server to client
+*/
 void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,char* filename){
 
     
@@ -350,10 +385,10 @@ void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,
         if(access(filename_path, F_OK) != -1){
             already_exist = 1;
             cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
-            l:scanf("%d",&overwrite);
+            loop:scanf("%d",&overwrite);
             if(overwrite != 0 && overwrite != 1){
                     LOG_ERROR("Invalid type 0 or 1");
-                    goto l;
+                    goto loop;
             }
         }
         // sending the overwrite option 
@@ -381,7 +416,9 @@ void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,
     }
     return;
 }
-
+/*
+* data_connection_recive for receiving files from server to client
+*/
 void data_connection_receive(unsigned long int dataPort,int sockfd,char* filename){
 
 	struct sockaddr_in clientAddr;
@@ -473,7 +510,7 @@ int main()
 
 	client OBJ;
 
-int sockfd;
+        int sockfd;
 
 	sockfd = socket(AF_INET , SOCK_STREAM , 0);
 	if(sockfd < 0)
@@ -497,10 +534,10 @@ int sockfd;
 		 LOG_INFO("Connection Established...");
 
        OBJ.membership();
-     if(login_check==1){
+     if(LOGIN_CHECK==1){
     LOG_INFO("successfull");
     LOG_INFO("GOOD TO GO ");
-    send(sockfd,&login_check,sizeof(int),0);
+    send(sockfd,&LOGIN_CHECK,sizeof(int),0);
 while(1){
         char filename[FILENAME_SIZE],comm[BUFFER_SIZE],filename_path[FILEPATH_SIZE];
     LOG_INFO("Try These commands:-");
@@ -575,16 +612,15 @@ while(1){
 			while((dir = readdir(d)) != NULL){
 				char *fname = dir -> d_name;
 				strcpy(newname,fname);
-				//printf("%s\n",newname);
 				char* fextension = strrchr(newname,'.');  //gettting the file extension
-				//printf("%s this is extension\n",fextension);
+				
 				if(fextension == NULL) continue;
 				else if(!strcmp(filename,fextension)){  //comparing the extension with the given extension
                     //sending filename to the server 
 					send(sockfd,newname,BUFFER_SIZE,0);
                     //generating an arbitrary port number 
 		            unsigned long int dataPort = rand()%1000;
-					memset(buffer_comm,0,sizeof(buffer_comm));
+					memset(buffer_comm,0,sizeof(buffer_comm));//reuse the same buffer after memset 
 					memset(buffer_soc,0,sizeof(buffer_soc));
 					strcpy(buffer_comm,"PUT");
 					strcat(buffer_comm,":");
@@ -594,6 +630,8 @@ while(1){
 
 					strcat(buffer_comm,buffer_soc);
 					strcat(buffer_comm,"#");
+				//sending commad	
+					
 		            send(sockfd,buffer_comm,sizeof(buffer_comm),0);
 		            OBJ.data_connection_send(dataPort,sockfd,newname);
 		          
@@ -694,5 +732,5 @@ LOG_ERROR("client failed to login");
 
 
 }
-	LOG_DEINIT();
+	
 }
