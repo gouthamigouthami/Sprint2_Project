@@ -726,7 +726,7 @@ while(1){
 }
 else
 {
-send(sockfd,&login_check,sizeof(int),0);
+send(sockfd,&LOGIN_CHECK,sizeof(int),0);
 LOG_ERROR("client failed to login");
 }
 
