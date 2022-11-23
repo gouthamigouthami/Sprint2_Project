@@ -305,14 +305,13 @@ while(1){
 			// traversing through the directory for the files with given extension 
 			char *fname;
 			//creating poineter variable for directory
-			
-	        DIR *directory;
+			 DIR *d;
 	        struct dirent *dir;
-	        directory= opendir(SERVER_PATH);
+	        d = opendir(SERVER_PATH);
 	        int ready=1;
 			char newname[FILE_SIZE];
-			while ((dir = readdir(directory)) != NULL){
-				fname=directory->d_name;
+			while ((dir = readdir(d)) != NULL){
+				fname=dir->d_name;
 				memset(newname,0,sizeof(newname));
 	            strcpy(newname,fname);
 				char* fextension = strrchr(newname, '.'); // getting the extension of the files
@@ -341,6 +340,7 @@ while(1){
 	}
 
 }
+	       
 else{
 cout<<"NOt loggined unable to proceed any file downloads\n";
 }
