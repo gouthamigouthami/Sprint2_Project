@@ -16,12 +16,12 @@
 static FILE *logfile=NULL;
 void LOG_INIT(void)
 {
-    static int cnt=0;
+   
     if (access(LOG_FILE_NAME, F_OK) == 0)
     {
         //printf("enter1");
         logfile = fopen(LOG_FILE_NAME,"a+");
-        cnt=1;
+        
     }
     else{
         logfile = fopen(LOG_FILE_NAME,"a");
