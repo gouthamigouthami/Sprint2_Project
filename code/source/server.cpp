@@ -107,7 +107,7 @@ void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_
 		send(client_socket,data,DATA_SIZE,0);
 		// receiving the overwrite option
 		recv(client_socket,&overwrite,sizeof(int),0);
-		if(ow == 1){
+		if(overwrite == 1){
 			sendfile(client_data_socket,filehandle,NULL,size);
 		}
 	}
