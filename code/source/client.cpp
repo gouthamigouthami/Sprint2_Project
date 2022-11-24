@@ -608,10 +608,10 @@ while(1){
 
         else if(strcmp(comm,"MPUT") == 0){
             //going through all the files in the directory 
-			DIR *d;
+			DIR *directory;
 			struct dirent *dir;
-			d = opendir(PATH);
-			while((dir = readdir(d)) != NULL){
+			directory = opendir(PATH);
+			while((dir = readdir(directory)) != NULL){
 				char *fname = dir -> d_name;
 				strcpy(newname,fname);
 				char* fextension = strrchr(newname,'.');  //gettting the file extension
@@ -639,7 +639,7 @@ while(1){
 		          
 				}
 			}
-			closedir(d);
+			closedir(directory);
         }
         else if(strcmp(comm,"MGET") == 0){
             //sending file name
