@@ -299,7 +299,8 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
         return;
     }
     memset(&clientAddr,0,sizeof(clientAddr));
-    clientAddr.sin_family = AF_INET;
+	//objects of clientAddr 
+    clientAddr.sin_family = AF_INET;//ipv4
 	clientAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	clientAddr.sin_port = dataPort;
 
@@ -330,7 +331,7 @@ void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
 
     if(already_exist){
         cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
-        repeat:scanf("%d",&overwrite);
+        repeat:cin>>overwrite;
         if(overwrite != 0 && overwrite != 1){
             LOG_ERROR("Invalid type 0 or 1");
             goto repeat;
@@ -446,9 +447,9 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
         return;
     }
     struct sockaddr_in serverAddr;
-    socklen_t l = sizeof(serverAddr);
+    socklen_t length = sizeof(serverAddr);
     // accepting the request from the server
-    int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&l);
+    int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
 
     int size,filehandle,status;
     int already_exist = 0,overwrite = 1;
@@ -458,8 +459,7 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
 
 	char data[DATA_SIZE];
 	memset(data,0,sizeof(data));
-    //recv(sockfd,&size,sizeof(int),0);
-    //receving the size of the file
+        //receiving file 
 	recv(sockfd,data,DATA_SIZE,0);
 	size = atoi(data);
 	
@@ -469,11 +469,12 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
         if(access(filename_path, F_OK) != -1){
             already_exist = 1;
           cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
-            l:
-	    scanf("%d",&overwrite);
+            repeat:
+	    
+		cin>>overwrite;
             if(overwrite != 0 && overwrite != 1){
                     LOG_ERROR("Invalid type 0 or 1");
-                    goto l;
+                    goto repeat;
             }
         }
         // sending the overwrite option to the server over control connection 
@@ -549,7 +550,8 @@ while(1){
         LOG_INFO("Enter the choice: command <filename>");
 
         // Taking input for command and filename 
-        scanf("%s %s",comm,filename);
+       
+	cin>>comm>>filename;
 
         char buffer_comm[CMD_SIZE],buffer_soc[BUFFER_SIZE];
         memset(buffer_comm,0,sizeof(buffer_comm));
@@ -568,9 +570,9 @@ while(1){
             // sending filename to the server
 			send(sockfd,filename,BUFFER_SIZE,0);
             // generating an arbitrary port number
-            unsigned long int dataPort = rand()%1000;
+            unsigned long int dataPort = rand()%1000;//3 digits
 			strcat(buffer_comm,":");
-			dataPort = dataPort + (long int)10000;
+			dataPort = dataPort + (long int)10000;//6digits
 
             sprintf(buffer_soc,"%ld",dataPort);
 
@@ -613,7 +615,7 @@ while(1){
 				char *fname = dir -> d_name;
 				strcpy(newname,fname);
 				char* fextension = strrchr(newname,'.');  //gettting the file extension
-				
+				cout<<fextension<<endl;
 				if(fextension == NULL) continue;
 				else if(!strcmp(filename,fextension)){  //comparing the extension with the given extension
                     //sending filename to the server 
@@ -670,17 +672,17 @@ while(1){
             //binding the socket with the corresponding data port
             int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
             if(binding < 0){
-                LOG_ERROR("Error in binding in PUT");
+                LOG_ERROR("Error in binding in MGET");
             }
             //listening for the server request
             int lis = listen(clientfd,LISTEN_SIZE);
             if(lis < 0){
-                LOG_ERROR("Error in listening in PUT");
+                LOG_ERROR("Error in listening in MGET");
             }
             struct sockaddr_in serverAddr;
-            socklen_t l = sizeof(serverAddr);
+            socklen_t length = sizeof(serverAddr);
             // accepting the request from the server
-            int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&l);
+            int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
 
 			while(1){
                 //ready = 0 implies all files are sent 
