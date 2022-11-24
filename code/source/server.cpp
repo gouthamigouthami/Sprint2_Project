@@ -305,12 +305,12 @@ while(1){
 			// traversing through the directory for the files with given extension 
 			char *fname;
 			//creating poineter variable for directory
-			 DIR *d;
+			 DIR *directory;
 	        struct dirent *dir;
-	        d = opendir(SERVER_PATH);
+	        directory = opendir(SERVER_PATH);
 	        int ready=1;
 			char newname[FILE_SIZE];
-			while ((dir = readdir(d)) != NULL){
+			while ((dir = readdir(directory)) != NULL){
 				fname=dir->d_name;
 				memset(newname,0,sizeof(newname));
 	            strcpy(newname,fname);
@@ -325,7 +325,7 @@ while(1){
 			}
 			ready = 0;
 			send(client_socket,&ready,sizeof(int),0);
-			closedir(d);
+			closedir(directory);
 			memset(buffer,0,sizeof(buffer));
 			close(client_data_socket);
 		}
