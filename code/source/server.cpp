@@ -65,13 +65,13 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 		send(client_socket,data,DATA_SIZE,0);
 	}
 	else{
-		int ow = 0;
+		int overwrite = 0;
 		sprintf(data,"%d",size);
 		//sending the size of the file
 		send(client_socket,data,DATA_SIZE,0);
 		// receiving the overwrite option 
-		recv(client_socket,&ow,sizeof(int),0);
-		if(ow == 1){
+		recv(client_socket,&overwrite,sizeof(int),0);
+		if(overwrite == 1){
 			sendfile(client_data_socket,filehandle,NULL,size);
 		}
 	}
@@ -101,12 +101,12 @@ void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_
 		send(client_socket,data,DATA_SIZE,0);
 	}
 	else{
-		int ow = 0;
+		int overwrite = 0;
 		sprintf(data,"%d",size);
 		//sending the size of the file
 		send(client_socket,data,DATA_SIZE,0);
 		// receiving the overwrite option
-		recv(client_socket,&ow,sizeof(int),0);
+		recv(client_socket,&overwrite,sizeof(int),0);
 		if(ow == 1){
 			sendfile(client_data_socket,filehandle,NULL,size);
 		}
@@ -253,6 +253,7 @@ while(1){
 		command[store]='\0';
 		cout<<"Received command : "<<command<<endl;
 		int check_ = 0;
+	//reading data port
 		for(read_ = cmd_read+1;buffer[read_]!='#';read_++){
 			socket_buffer[check_++] = buffer[read_];
 		}
