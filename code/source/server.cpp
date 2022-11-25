@@ -139,9 +139,9 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
     if(overwrite == true)
     {
     	if(exists == true)
-    		filehandle = open(file, O_WRONLY | O_CREAT | O_TRUNC, 644);     
+    		filehandle = open(file, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);     
     	else
-    		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, 666);     
+    		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);     
 
     	// receving size of the file
 		recv(client_socket,data,DATA_SIZE,PROTOCOL);
