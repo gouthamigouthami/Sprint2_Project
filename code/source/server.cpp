@@ -34,19 +34,19 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 	// sending connect request to the client from the server
 	int status_connect = connect(client_data_socket, (struct sockaddr*) &clientAddress2, sizeof(clientAddress2));
 	if(status_connect < PROTOCOL) {
-		error("Connection Errorn");
+		error("Connection Error");
 		return ;
 	}
 	int filehandle,size; 
 	char file[MAXLEN];
 	struct stat object;
-	strcpy(file,SERVER_PATH);
-	strcat(file,filename);
+	strcpy(file,SERVER_PATH); // copies server path into file
+	strcat(file,filename); //concatenating both filename and serverpath
 	stat(file,&object);
-	filehandle = open(file,O_RDONLY);
+	filehandle = open(file,O_RDONLY); //opening a file for reading the filename
 	size = object.st_size;
 	char data[DATA_SIZE];
-	memset(data,PROTOCOL,sizeof(data));
+	memset(data,PROTOCOL,sizeof(data)); // used to clear the data
 	// if file doesnt exist
 	if(filehandle == FILEHANDLE) {
 		size = false;
@@ -72,8 +72,8 @@ void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_
 	int filehandle,size;
 	char file[MAXLEN];
 	struct stat object;
-	strcpy(file,SERVER_PATH);
-	strcat(file,filename);
+	strcpy(file,SERVER_PATH); // copies the serverpath into file
+	strcat(file,filename); //concatenates both filename and path
 	stat(file,&object);
 	filehandle = open(file,O_RDONLY);
 	size = object.st_size;
@@ -139,9 +139,9 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
     if(overwrite == true)
     {
     	if(exists == true)
-    		filehandle = open(file, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);     
+    		filehandle = open(file, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);     // opening a file for writing with the permission 644
     	else
-    		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);     
+    		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);     // opening for not overwritting with permission 666
 
     	// receving size of the file
 		recv(client_socket,data,DATA_SIZE,PROTOCOL);
@@ -234,7 +234,7 @@ int main()
 		else if(!strcmp(command,"PUT")){
 			unsigned long int PORT = atoi(socket_buffer);
 			OBJ.dataConnectionReceive(clientAddress,client_socket,PORT,filename);
-			memset(buffer,PROTOCOL,MAXLEN);
+			memset(buffer,PROTOCOL,MAXLEN); // freeup the memory occupied by maxlen
 			memset(socket_buffer,PROTOCOL,MAXLEN);
 		}
 		else if(!strcmp(command,"MGET")){
