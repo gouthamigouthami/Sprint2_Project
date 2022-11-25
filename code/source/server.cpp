@@ -189,7 +189,7 @@ server OBJ;
 	if(server_socket < PROTOCOL)
         {
        // socket methode return -1 if the creation was not successful
-	cout<< "Socket creation has failed.";
+	error("Socket creation has failed.");
 		return 0;
 	    } 
           info("Socket Created.");
@@ -236,7 +236,7 @@ info("...Waiting for connections... ");
 
 recv(client_socket,&login_check,sizeof(int),PROTOCOL);
  if(login_check==true){
-cout<<"logined\n";
+info("logined");
 
 while(true){
 
@@ -252,7 +252,7 @@ while(true){
 			command[store++] = buffer[cmd_read];
 		}
 		command[store]='\0';
-		cout<<"Received command : "<<command<<endl;
+		std::cout<<"Received command : "<<command<<std::endl;
 		int check_ = 0;
 	//reading data port
 		for(read_ = cmd_read+1;buffer[read_]!='#';read_++){
@@ -301,7 +301,7 @@ while(true){
 			int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
 			
 			if(status_connect<PROTOCOL){
-				cout<<"Connection Error\n";
+				error("Connection Error");
 			}
 			// traversing through the directory for the files with given extension 
 			char *fname;
@@ -318,7 +318,7 @@ while(true){
 				char* fextension = strrchr(newname, '.'); // getting the extension of the files
 				if(fextension == NULL) continue;
 				if (strcmp(filename,fextension)==PROTOCOL){   // comparing the externsion with the given extension
-					cout<<"Sending" << newname<<"file\n";
+					std::cout<<"Sending " << newname<<"file\n";
 	                send(client_socket, &ready, sizeof(int), PROTOCOL);
 	                send(client_socket,newname,FILE_SIZE,PROTOCOL);
 					OBJ.dataConnectionSend_mget(client_data_socket,clientAddress,client_socket,PORT,newname);
