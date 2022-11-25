@@ -14,7 +14,6 @@
 #include <fcntl.h>
 #include <ifaddrs.h>
 #include <dirent.h>
-#include <string.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 #include "client_header.h"
@@ -25,18 +24,14 @@ class Customer{
 	protected:
 		string name, email, phone_number;
 	public:
-		/*
-		 * * setting name *
-		  * */
+		/* setting name **/
 		void setName(){
 			LOG_INFO("Enter your name : ");
 			cin.ignore();
 			getline(std::cin, name);
 			std::cout << std::endl;
 		}
-		/*
-		 * * setting email
-		 * */
+		/* setting email */
 		void setEmail(){
 			int valid_email = false;
 			char temp;
@@ -63,9 +58,7 @@ class Customer{
 				}
 			}
 		}
-		/*
-		 * * setting phonenumber
-		 * */
+		/*  setting phonenumber  */
 		void setPhonenumber(){
 			LOG_INFO("Enter your phone number : ");
 			std::cin >> phone_number;
@@ -78,21 +71,15 @@ class Customer{
 			}
 			std::cout << std::endl;
 		}
-		/*
-		 * * returning the  name
-		 * */
+		/* returning the  name */
 		string getName(){
 			return name;
 		}
-		/*
-		 * * returning the  phone number
-		 * */
+		/* returning the  phone number */
 		string getPhonenumber(){
 			return phone_number;
 		}
-		/*
-		 * * returning the email
-		 * */
+		/* returning the email */
 		string getEmail(){
 			return email;
 		}
@@ -106,6 +93,7 @@ class Member : public Customer {
 			char password_1[MAXIMUM_PSW];
 passwordset:
 			LOG_INFO("ENTER YOUR PASSWORD : ");
+			/* taking password input from user */
 			std::cin >> password;
 			string pw = password;
 			LOG_INFO("REENTER YOUR PASSWORD :");
@@ -118,7 +106,7 @@ passwordset:
 				goto passwordset;
 			}
 		}
-		/*returning the password*/
+		/* returning the password */
 		string getPassword(){
 			return password;
 		}
@@ -146,14 +134,10 @@ class client {
 				<< m1 ->getPassword() <<'\n';
 			//closing file
 			member.close();
-				/* 
-				 * *after finishing nwemembership registration calling to login function to login to server
-				 * */
+				/* *after finishing newmembership registration calling to login function to login after registration */
 			login();
 		}
-		/* 
-		 * *login for existing and new user afetr registration
-		 * */
+		/*  login for existing and new user afetr registration */
 		void login(){
 			fstream member1;
 			char pass_input[MAXIMUM_PSW];
@@ -211,10 +195,8 @@ name_check:
 			}
 		}
 	public:
-		/*
-		 * *memberhip function for  reading user input foe login and new membership
-		 * */
-		void membership()
+/* memberhip function for  reading user input foe login and new membership */
+void membership()
 		{
 			char resp;
 			std::cout << "\n\t\t========================\t==========================\t\n"
@@ -234,9 +216,7 @@ name_check:
 				login();
 			}
 		}
-/*
-   *data_connection_send is for sending files from client to server 
- */
+/* data_connection_send is for sending files from client to server */
 void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
 	struct sockaddr_in clientAddr;
 	int clientfd,already_exist = false,overwrite = true,filehandle;
