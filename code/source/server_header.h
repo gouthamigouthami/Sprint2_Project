@@ -11,6 +11,8 @@
 #define PORT_1 9090
 #define PROTOCOL 0
 #define FILEHANDLE -1
+#define PERMISSION 644
+#define PERMISSION1 666
 #include "../include/LOGGER.H"
 #define SERVER_PATH "./server_files/"
 #endif
