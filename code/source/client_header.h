@@ -16,6 +16,8 @@
 #define FILENAME_SIZE 25
 #define BUFFER_SIZE 20
 #define LISTEN_SIZE 20
+#define PROTOCOL 0
+#define FILEHANDLE -1
 #define PATH "./client_files/"
 #include "../include/Logger.h"
 #endif
