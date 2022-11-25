@@ -501,7 +501,6 @@ int main()
 				char *fname = dir -> d_name;
 				strcpy(newname,fname);
 				char* fextension = strrchr(newname,'.');  //gettting the file extension
-				std::cout<<fextension<<std::endl;
 				if(fextension == NULL) continue;
 				else if(!strcmp(filename,fextension)){  //comparing the extension with the given extension
                                 //sending filename to the server 
