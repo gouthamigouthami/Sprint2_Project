@@ -28,9 +28,9 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 		return;
 	}
  	bzero(&clientAddress2, sizeof(clientAddress2));
-	clientAddress2.sin_family = AF_INET;
-	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
-	clientAddress2.sin_port = port;
+	clientAddress2.sin_family = AF_INET;      // assigining ipv4 address to struct
+	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;   // assigining any network address to struct addressess
+	clientAddress2.sin_port = port;  //assigining a port to struct address
 	// sending connect request to the client from the server
 	int status_connect = connect(client_data_socket, (struct sockaddr*) &clientAddress2, sizeof(clientAddress2));
 	if(status_connect < PROTOCOL) {
@@ -109,9 +109,9 @@ void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int
 		return ;
 	}
  	bzero(&clientAddress2, sizeof(clientAddress2));
-	clientAddress2.sin_family = AF_INET;
-	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
-	clientAddress2.sin_port = port;
+	clientAddress2.sin_family = AF_INET;    // assigining ipv4 address to struct
+	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;    // assigining any network address to struct addressess
+	clientAddress2.sin_port = port;      //assigining a port to struct address
 	// sending connect request to the client from the server
 	int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
 	if(status_connect<PROTOCOL){ 
@@ -172,9 +172,9 @@ int main()
          info("Socket Created.");
 	 struct sockaddr_in serverAddress , clientAddress;
 	//specifying address and type for the server to operate under
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(PORT_1);
-	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+	serverAddress.sin_family = AF_INET;              // assigining ipv4 address to struct
+	serverAddress.sin_port = htons(PORT_1);           //assigining a port to struct address
+	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);     //assigining a port to struct address
 	int bindStatus = bind(server_socket , (struct sockaddr*) & serverAddress , sizeof(serverAddress));
 	if(bindStatus < PROTOCOL) {
 		error("Socket binding has failed");
@@ -253,9 +253,9 @@ int main()
 		 	bzero(&clientAddress2, sizeof(clientAddress2));
 
 
-			clientAddress2.sin_family = AF_INET;
-			clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
-			clientAddress2.sin_port = PORT;
+			clientAddress2.sin_family = AF_INET;                 // assigining ipv4 address to struct
+			clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;    //assigining a port to struct address
+			clientAddress2.sin_port = PORT ;   //assigining a port to struct address
 			
 			// sending connect request to the client 
 			int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
