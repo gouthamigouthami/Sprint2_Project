@@ -1,0 +1,611 @@
+        -:    0:Source:client.cpp
+        -:    0:Graph:client.gcno
+        -:    0:Data:client.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include<iostream>
+        -:    2:#include<fstream>
+        -:    3:#include <stdlib.h>
+        -:    4:#include <unistd.h>
+        -:    5:#include <sys/types.h>
+        -:    6:#include <sys/socket.h>
+        -:    7:#include <netinet/in.h>
+        -:    8:#include <arpa/inet.h>
+        -:    9:#include <string>
+        -:   10:#include <errno.h>
+        -:   11:#include <netdb.h>
+        -:   12:#include <time.h>
+        -:   13:#include <iomanip>
+        -:   14:#include <fcntl.h>
+        -:   15:#include <ifaddrs.h>
+        -:   16:#include <dirent.h>
+        -:   17:#include <sys/sendfile.h>
+        -:   18:#include <sys/stat.h>
+        -:   19:#include "client_header.h"
+        -:   20:using namespace std;
+        -:   21:int LOGIN_CHECK=false;
+        -:   22:char NAME[MAXIMUM_NAME],PASSWORD[MAXIMUM_PSW],EMAIL[MAXIMUM_EMAIL],PHONE_NUMBER[MAXIMUM_PH_NO];
+        1:   23:class Customer{
+        -:   24:	protected:
+        -:   25:		string name, email, phone_number;
+        -:   26:	public:
+        -:   27:		/* setting name **/
+        1:   28:		void setName(){
+        1:   29:			LOG_INFO("Enter your name : ");
+        1:   30:			cin.ignore();
+        1:   31:			getline(std::cin, name);
+        1:   32:			std::cout << std::endl;
+        1:   33:		}
+        -:   34:		/* setting email */
+        1:   35:		void setEmail(){
+        1:   36:			int valid_email = false;
+        -:   37:			char temp;
+        1:   38:			LOG_INFO("Enter your email address: ");
+        1:   39:			cin >> email;
+        1:   40:			std::cout << std::endl;
+        1:   41:			int email_length = email.length();
+        8:   42:			for (int check=0; check<email_length; ++check){
+        7:   43:				temp = email.at(check);
+        7:   44:				if (temp == '@' ){
+    #####:   45:					valid_email = true;
+        -:   46:				}
+        -:   47:			}
+        7:   48:			while (!valid_email ){
+        3:   49:				LOG_ERROR("Enter a valid email address: ");
+        3:   50:				std::cin.ignore();
+        3:   51:				std::cin >> email;
+        3:   52:				std::cout << std::endl;
+       24:   53:				for (int email_check=0; email_check<email_length; ++email_check){
+       21:   54:					temp = email.at(email_check);
+       21:   55:					if (temp == '@' ){
+        1:   56:						valid_email = true;
+        -:   57:					}
+        -:   58:				}
+        -:   59:			}
+        1:   60:		}
+        -:   61:		/*  setting phonenumber  */
+        1:   62:		void setPhonenumber(){
+        1:   63:			LOG_INFO("Enter your phone number : ");
+        1:   64:			std::cin >> phone_number;
+        1:   65:			int phone_length = phone_number.length();
+        7:   66:			while (phone_length != PHNUM_LIMIT){
+        3:   67:				std::cout << std::endl;
+        3:   68:				LOG_ERROR("Enter a valid phone number: ");
+        3:   69:				std::cin >> phone_number;
+        3:   70:				phone_length = phone_number.length();
+        -:   71:			}
+        1:   72:			std::cout << std::endl;
+        1:   73:		}
+        -:   74:		/* returning the  name */
+        2:   75:		string getName(){
+        2:   76:			return name;
+        -:   77:		}
+        -:   78:		/* returning the  phone number */
+        2:   79:		string getPhonenumber(){
+        2:   80:			return phone_number;
+        -:   81:		}
+        -:   82:		/* returning the email */
+        2:   83:		string getEmail(){
+        2:   84:			return email;
+        -:   85:		}
+        -:   86:		~Customer(){}
+        -:   87:};
+        1:   88:class Member : public Customer {
+        -:   89:	public:
+        -:   90:		char password[MAXIMUM_PSW];
+        -:   91:		/*setting password*/
+        2:   92:		void setPassword(){
+        -:   93:			char password_1[MAXIMUM_PSW];
+        2:   94:passwordset:
+        2:   95:			LOG_INFO("ENTER YOUR PASSWORD : ");
+        -:   96:			/* taking password input from user */
+        2:   97:			std::cin >> password;
+        3:   98:			string pw = password;
+        2:   99:			LOG_INFO("REENTER YOUR PASSWORD :");
+        2:  100:			std::cin >> password_1;
+        3:  101:			string pw1 = password_1;
+        2:  102:			if(pw1==pw){
+        1:  103:				LOG_INFO (" Your password set. you are a member now !!");
+        -:  104:			} else {
+        1:  105:				LOG_ERROR( " Your password does not match. Try again !!");
+        1:  106:				goto passwordset;
+        -:  107:			}
+        1:  108:		}
+        -:  109:		/* returning the password */
+        2:  110:		string getPassword(){
+        2:  111:			return password;
+        -:  112:		}
+        -:  113:};
+        -:  114:/*creating client class*/
+        -:  115:class client {
+        -:  116:	protected:
+        -:  117:		/* membership function for a  newmembe */
+        1:  118:		void newmembership(){
+        2:  119:			fstream member;
+        1:  120:			member.open("Membership.txt",ios::app);
+        2:  121:			string username,password , username1,password1;
+        1:  122:			Member * m1 = new Member;
+        1:  123:			m1 -> setName();
+        1:  124:			m1 -> setEmail();
+        1:  125:			m1 -> setPhonenumber();
+        1:  126:			m1 ->setPassword();
+        1:  127:			std::cout << "\n\t----------------------------------------------------------------------------------------------\n"                               <<setw(MAXIMUM_PSW)<< "\tHello Mr/MS , " << std::endl << std::endl <<
+        2:  128:				setw(MAXIMUM_PSW)<< "Your Name is : " << m1 -> getName() << std::endl << std::endl <<
+        2:  129:				setw(MAXIMUM_PSW)<< "Your Password is : " << m1 -> getPassword() << std::endl << std::endl <<
+        2:  130:				setw(MAXIMUM_PSW)<< "Your Phone Number is : " << m1 -> getPhonenumber() << std::endl << std::endl <<
+        2:  131:				setw(MAXIMUM_PSW)<< "Your Email is : " << m1 -> getEmail() <<std::endl << std::endl
+        1:  132:				<< "\t --------------------------------------------------------------------------------------------------\n\n";
+        4:  133:			member << m1 ->getName() <<  '|' << m1->getEmail() << '|' << m1->getPhonenumber() <<  '|'
+        3:  134:				<< m1 ->getPassword() <<'\n';
+        -:  135:			//closing file
+        1:  136:			member.close();
+        -:  137:				/* *after finishing newmembership registration calling to login function to login after registration */
+        1:  138:			login();
+        1:  139:		}
+        -:  140:		/*  login for existing and new user afetr registration */
+        1:  141:		void login(){
+        2:  142:			fstream member1;
+        -:  143:			char pass_input[MAXIMUM_PSW];
+        2:  144:			string line,password_input,name ,name_input, email1, password1;
+        1:  145:			int login_attempt = false, count = 0 ,  success=false,read = 0;
+        3:  146:name_check:
+        3:  147:			member1.open("Membership.txt",ios::in);
+        3:  148:			LOG_INFO(" Enter your name for login : ");
+        3:  149:			std::cin >> name_input;
+        4:  150:			ifstream file("Membership.txt");
+       45:  151:			while (getline(file, line)) {
+       21:  152:				count++;
+        -:  153:			}
+       45:  154:			while( read <= count ){
+       22:  155:				member1.getline(NAME, MAXIMUM_NAME, '|');
+       22:  156:				member1.getline(EMAIL, MAXIMUM_EMAIL, '|');
+       22:  157:				member1.getline(PHONE_NUMBER, MAXIMUM_PH_NO, '|');
+       22:  158:				member1.getline(PASSWORD, MAXIMUM_PSW);
+       22:  159:				name = NAME;
+       22:  160:				if ( NAME== name_input){
+        1:  161:					success  = true;
+        1:  162:					break;
+        -:  163:				}
+       21:  164:				read ++;
+        -:  165:			}
+        3:  166:			member1.close();
+        3:  167:			if ( !success  ){
+        2:  168:				std::cout <<std:: endl;
+        2:  169:				LOG_ERROR("Your Name not found !!!");
+        2:  170:				goto name_check;
+        -:  171:			}
+        1:  172:			password1=PASSWORD;
+        1:  173:			std::cout << std::endl;
+        1:  174:			LOG_INFO("Enter  password : ");
+        1:  175:			std::cin>>pass_input;
+        3:  176:			for (login_attempt = 1 ; login_attempt <= MAXIMUM_ATTEMPT ; login_attempt ++){
+        3:  177:				if (pass_input ==password1 ){
+    #####:  178:					LOGIN_CHECK=true;
+    #####:  179:					LOG_INFO("Login Successful !!!");
+    #####:  180:					break;
+        -:  181:				}
+        3:  182:				std::cout <<std:: endl;
+        3:  183:				std::cout << "Login Failed. Attempt " << login_attempt  << " of 3" << std::endl;
+        3:  184:				LOG_ERROR ("Please re-enter Password: ") ;
+        3:  185:				std::cin>>pass_input;
+        3:  186:				if (pass_input == password1){
+        1:  187:					LOGIN_CHECK=true;
+        1:  188:					LOG_INFO( "Login Successful !!!");
+        1:  189:					break;
+        -:  190:				}
+        -:  191:			}
+        1:  192:			if (login_attempt == MAXIMUM_ATTEMPT){
+        1:  193:				std::cout << std::endl;
+        1:  194:				LOG_ERROR("Login Failed. Attempt 3 of 3");
+        -:  195:			}
+        1:  196:		}
+        -:  197:	public:
+        -:  198:/* memberhip function for  reading user input foe login and new membership */
+        1:  199:void membership()
+        -:  200:		{
+        -:  201:			char resp;
+        -:  202:			std::cout << "\n\t\t========================\t==========================\t\n"
+        -:  203:				<< "\t\t* (A) NEW MEMBERSHIP  \t\t     *(B)   LOGIN *\t\t\n"
+        -:  204:				<< "\t\t========================\t==========================\t\n\n"
+        1:  205:				<< "\t\t\t\t\t\t\t Input :" ;
+        1:  206:			std::cin >> resp;
+        1:  207:			resp = tolower(resp);
+        1:  208:			while ((resp != 'a') && (resp != 'b') )
+        -:  209:			{
+    #####:  210:				LOG_ERROR( "Enter a valid response: ");
+    #####:  211:				std::cin >> resp;
+        -:  212:			}
+        1:  213:			if (resp == 'a'){
+        1:  214:				newmembership();
+        -:  215:			}else{
+    #####:  216:				login();
+        -:  217:			}
+        1:  218:		}
+        -:  219:/* data_connection_send is for sending files from client to server */
+       10:  220:void data_connection_send(unsigned long int dataPort,int sockfd,char* filename){
+        -:  221:	struct sockaddr_in clientAddr;
+       10:  222:	int clientfd,already_exist = false,overwrite = true,filehandle;
+        -:  223:	char filename_path[FILEPATH_SIZE];
+        -:  224:	// creating data socket for data connection 
+       10:  225:        clientfd = socket(AF_INET,SOCK_STREAM,PROTOCOL);
+       10:  226:	if(clientfd < PROTOCOL){
+    #####:  227:		LOG_ERROR("Error in creating socket for data connection");
+    #####:  228:		return;
+        -:  229:	}
+       10:  230:	memset(&clientAddr,PROTOCOL,sizeof(clientAddr));
+        -:  231:	//objects of clientAddr 
+       10:  232:        clientAddr.sin_family = AF_INET;//ipv4
+       10:  233:	clientAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+       10:  234:	clientAddr.sin_port = dataPort;
+        -:  235:	//binding the socket with the corresponding data port
+       10:  236:        int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
+       10:  237:        if(binding < PROTOCOL){
+    #####:  238:		LOG_ERROR("Error in binding in PUT");
+    #####:  239:		return;
+        -:  240:	}
+        -:  241:	//listening for the server request 
+       10:  242:        int lis = listen(clientfd,MAX_LISTEN);
+       10:  243:        if(lis < PROTOCOL){
+    #####:  244:		LOG_ERROR("Error in listening in PUT");
+    #####:  245:		return;
+        -:  246:	}
+        -:  247:	struct sockaddr_in serverAddr;
+       10:  248:	socklen_t length = sizeof(serverAddr);
+        -:  249:	// accepting the request from the server
+       10:  250:        int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
+       10:  251:	LOG_INFO("Accepted");
+       10:  252:        strcpy(filename_path,PATH);
+       10:  253:        strcat(filename_path,filename);
+       10:  254:        filehandle = open(filename_path,O_RDONLY);
+        -:  255:        // receving whether the file already exists in the server or not 
+       10:  256:        recv(sockfd,&already_exist,sizeof(int),PROTOCOL);
+       10:  257:	if(already_exist){
+        4:  258:		std::cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
+        8:  259:repeat:
+        8:  260:		std::cin>>overwrite;
+        8:  261:		if(overwrite != 0 && overwrite != 1){
+        4:  262:			LOG_ERROR("Invalid type 0 or 1");
+        4:  263:			goto repeat;
+        -:  264:		}
+        -:  265:	}
+        -:  266:	//sending the overwrite option over control connection 
+       10:  267:        send(sockfd,&overwrite,sizeof(int),PROTOCOL);
+        -:  268:	char data[DATA_SIZE];
+       10:  269:	memset(data,PROTOCOL,sizeof(data));
+       10:  270:        if(overwrite == true){
+        -:  271:		struct stat obj;
+        -:  272:                int status,size;
+        8:  273:                stat(filename_path,&obj);
+        8:  274:                size = obj.st_size;
+        8:  275:		sprintf(data,"%d",size);
+        8:  276:		send(sockfd,data,DATA_SIZE,PROTOCOL);
+        8:  277:                sendfile(acc,filehandle,NULL,size);
+        8:  278:                recv(sockfd,&status,sizeof(int),PROTOCOL);
+        8:  279:                if(status){
+        8:  280:			LOG_INFO("File successful PUT in the server");
+    #####:  281:		}else LOG_ERROR("File not PUT successfully in the server");
+        -:  282:	}
+       10:  283:	close(clientfd);
+       10:  284:	close(acc);
+        -:  285:}
+        -:  286:/*
+        -:  287:* data_connection_receive_mget is for receiving all user choice extension files from server to client
+        -:  288:*/
+       14:  289:void data_connection_receive_mget(int acc,unsigned long int dataPort,int sockfd,char* filename){
+        -:  290:	int size,filehandle,status;
+       14:  291:        int already_exist = false,overwrite = true;
+        -:  292:        char filename_path[FILEPATH_SIZE];
+        -:  293:	char data[DATA_SIZE];
+       14:  294:        strcpy(filename_path,PATH);
+       14:  295:        strcat(filename_path,filename);
+       14:  296:	memset(data,PROTOCOL,sizeof(data));
+        -:  297:        //recv(sockfd,&size,sizeof(int),0);
+       14:  298:        recv(sockfd,data,DATA_SIZE,PROTOCOL);
+       14:  299:        size = atoi(data);
+       14:  300:	if(size){
+        -:  301:		// checking whether the file already exists or not 
+        6:  302:		   if(access(filename_path, F_OK) != FILEHANDLE){
+        4:  303:			   already_exist = true;
+        4:  304:			   std::cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
+        8:  305:loop:
+        8:  306:			   std::cin>>overwrite;
+        8:  307:			   if(overwrite != 0 && overwrite != 1){
+        4:  308:				   LOG_ERROR("Invalid type 0 or 1");
+        4:  309:				   goto loop;
+        -:  310:			   }
+        -:  311:		   }
+        -:  312:		   // sending the overwrite option 
+        6:  313:		   send(sockfd,&overwrite,sizeof(int),0);
+        6:  314:		   if(overwrite == true){
+        3:  315:			   if(already_exist==true)
+        1:  316:				   filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, 644);
+        -:  317:			   else
+        2:  318:				   filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, 666);
+        3:  319:			   char *receive_file = (char*)malloc(size*sizeof(char));
+        -:  320:			   // receving the size of the file
+        3:  321:			   recv(acc, receive_file, size, PROTOCOL);
+        3:  322:			   status=write(filehandle, receive_file, size);
+        3:  323:			   close(filehandle);
+        3:  324:			   if(status){
+        3:  325:				   LOG_INFO("File successful GET in the server");
+        -:  326:			   }
+    #####:  327:			   else LOG_ERROR("File not GET successfully in the server");
+        -:  328:		   }
+        -:  329:	}else{
+        8:  330:		LOG_ERROR("No such file exists in server");
+        -:  331:	}
+       14:  332:	return;
+        -:  333:}
+        -:  334:/*
+        -:  335:* data_connection_recive for receiving files from server to client
+        -:  336:*/
+        5:  337:void data_connection_receive(unsigned long int dataPort,int sockfd,char* filename){
+        -:  338:	struct sockaddr_in clientAddr;
+        -:  339:	int clientfd;
+        -:  340:	// creating data socket for data connection 
+        5:  341:	clientfd = socket(AF_INET,SOCK_STREAM,PROTOCOL);
+        5:  342:	if(clientfd < PROTOCOL){
+    #####:  343:		LOG_ERROR("Error in creating socket for data connection");
+    #####:  344:		return;
+        -:  345:	}
+        5:  346:	memset(&clientAddr,PROTOCOL,sizeof(clientAddr));
+        5:  347:	clientAddr.sin_family = AF_INET;
+        5:  348:	clientAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        5:  349:	clientAddr.sin_port = dataPort;
+        -:  350:	//binding the socket with the corresponding data port
+        5:  351:	int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
+        5:  352:	if(binding < PROTOCOL){
+    #####:  353:		LOG_ERROR("Error in binding in PUT");
+    #####:  354:		return;
+        -:  355:	}
+        -:  356:	//listening for the server request
+        5:  357:	int lis = listen(clientfd,LISTEN_SIZE);
+        5:  358:        if(lis < PROTOCOL){
+    #####:  359:		LOG_ERROR("Error in listening in PUT");
+    #####:  360:		return;
+        -:  361:	}
+        -:  362:	struct sockaddr_in serverAddr;
+        5:  363:        socklen_t length = sizeof(serverAddr);
+        -:  364:        // accepting the request from the server
+        5:  365:        int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
+        -:  366:	int size,filehandle,status;
+        5:  367:        int already_exist = false,overwrite = true;
+        -:  368:        char filename_path[FILEPATH_SIZE];
+        5:  369:        strcpy(filename_path,PATH);
+        5:  370:        strcat(filename_path,filename);
+        -:  371:        char data[DATA_SIZE];
+        5:  372:	memset(data,PROTOCOL,sizeof(data));
+        -:  373:        //receiving file 
+        5:  374:	recv(sockfd,data,DATA_SIZE,0);
+        5:  375:	size = atoi(data);
+        5:  376:	if(size){
+        -:  377:        //checking the file already exists or not 
+        3:  378:	if(access(filename_path, F_OK) != FILEHANDLE){
+        2:  379:		already_exist = true;
+        2:  380:		std::cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
+        4:  381:repeat:
+        -:  382:	    
+        4:  383:		std::cin>>overwrite;
+        4:  384:		if(overwrite != 0 && overwrite != 1){
+        2:  385:			LOG_ERROR("Invalid type 0 or 1");
+        2:  386:                        goto repeat;
+        -:  387:		}
+        -:  388:	}
+        -:  389:	// sending the overwrite option to the server over control connection 
+        3:  390:	send(sockfd,&overwrite,sizeof(int),PROTOCOL);
+        3:  391:	if(overwrite == true){
+        2:  392:		if(already_exist==true)
+        1:  393:			filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, 644);
+        -:  394:        	else
+        1:  395:        		filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, 0666);
+        2:  396:		char *receive_file = (char*)malloc(size*sizeof(char)); 
+        2:  397:                recv(acc, receive_file, size, PROTOCOL);  //receving the file
+        2:  398:                status=write(filehandle, receive_file, size);
+        2:  399:                close(filehandle);
+        2:  400:                if(status){
+        2:  401:			LOG_INFO("File successful GET in the server");
+        -:  402:		}
+    #####:  403:		else LOG_ERROR("File not GET successfully in the server");
+        -:  404:	}
+        -:  405:	}else{
+        2:  406:		LOG_INFO("No such file exists in server");
+        -:  407:	}
+        5:  408:	close(clientfd);
+        5:  409:        close(acc);
+        5:  410:        return;
+        -:  411:}
+        -:  412:};
+        1:  413:int main()
+        -:  414:{
+        -:  415:	client OBJ;
+        -:  416:	int sockfd;
+        -:  417:        struct sockaddr_in serverAddr ;
+        -:  418:
+        1:  419:	sockfd = socket(AF_INET , SOCK_STREAM , PROTOCOL);
+        1:  420:	if(sockfd < PROTOCOL){
+        -:  421:
+    #####:  422:		LOG_INFO("Creation of client socket failed") ;
+    #####:  423:		return 0;
+        -:  424:	}
+        1:  425:	LOG_INFO("socked creted");
+        1:  426:	serverAddr.sin_family = AF_INET;
+        1:  427:	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        1:  428:	serverAddr.sin_port = htons(PORT);
+        1:  429:	if(connect(sockfd ,  (struct sockaddr*) & serverAddr , sizeof(serverAddr)) < PROTOCOL)
+        -:  430:	{
+    #####:  431:		LOG_ERROR("Connection Error...");
+    #####:  432:		return 0;
+        -:  433:	}else{
+        1:  434:		LOG_INFO("Connection Established...");
+        1:  435:		OBJ.membership();
+        1:  436:		if(LOGIN_CHECK==true){
+        1:  437:                LOG_INFO("successfull");
+        1:  438:                LOG_INFO("GOOD TO GO ");
+        1:  439:                send(sockfd,&LOGIN_CHECK,sizeof(int),PROTOCOL);
+        -:  440:		while(1){
+        -:  441:			char filename[FILENAME_SIZE],comm[BUFFER_SIZE],filename_path[FILEPATH_SIZE];
+       22:  442:			LOG_INFO("Try These commands:-");
+       22:  443:                        LOG_INFO("Upload files to server using- PUT");
+       22:  444:                        LOG_INFO("Upload all files with a specific extention using- MPUT");
+       22:  445:                        LOG_INFO("Download files from server using- GET");
+       22:  446:                        LOG_INFO("Download all files with a specific extention using- MGET");
+       22:  447:                        LOG_INFO("Exit Using- QUIT");
+       22:  448:                        LOG_INFO("Enter the choice: command <filename>");
+        -:  449:			// Taking input for command and filename 
+        -:  450:       
+       22:  451:			std::cin>>comm>>filename;
+        -:  452:			char buffer_comm[CMD_SIZE],buffer_soc[BUFFER_SIZE];
+       22:  453:                        memset(buffer_comm,PROTOCOL,sizeof(buffer_comm));
+       22:  454:		        memset(buffer_soc,PROTOCOL,sizeof(buffer_soc));
+       22:  455:                        strcpy(buffer_comm,comm);
+       22:  456:                        strcpy(filename_path,PATH);
+       22:  457:                        strcat(filename_path,filename);
+        -:  458:		        char newname[BUFFER_SIZE];
+       22:  459:		        memset(newname,PROTOCOL,sizeof(newname));
+       22:  460:                        if(strcmp(comm,"PUT") == PROTOCOL){
+        -:  461:				// checking whether the file exists or not in the client side
+        4:  462:				if(access(filename_path,F_OK) == FILEHANDLE){
+        1:  463:					std::cout<<filename<<" does not exist in client side\n";
+        -:  464:				}else{
+        -:  465:					// sending filename to the server
+        3:  466:			                send(sockfd,filename,BUFFER_SIZE,PROTOCOL);
+        -:  467:                                        // generating an arbitrary port number
+        3:  468:					unsigned long int dataPort = rand()%1000;//3 digit
+        3:  469:					strcat(buffer_comm,":");
+        3:  470:					dataPort = dataPort + (long int)10000;//6digits
+        3:  471:					sprintf(buffer_soc,"%ld",dataPort);
+        3:  472:					strcat(buffer_comm,buffer_soc);
+        3:  473:					strcat(buffer_comm,"#");
+        -:  474:					//sending the command and data port over the control connection 
+        3:  475:					send(sockfd,buffer_comm,sizeof(buffer_comm),PROTOCOL);
+        3:  476:                                        OBJ.data_connection_send(dataPort,sockfd,filename);
+        3:  477:                                        LOG_INFO("File PUT successful");
+        -:  478:				}
+        -:  479:			}
+       18:  480:			else if(strcmp(comm,"GET") == 0){
+        -:  481:				//sending filename to the server 
+        5:  482:			        send(sockfd,filename,BUFFER_SIZE,PROTOCOL);
+        -:  483:				//generating an arbitrary port number 
+        5:  484:                                unsigned long int dataPort = rand()%1000;
+        5:  485:			        strcat(buffer_comm,":");
+        5:  486:				dataPort = dataPort + (long int)10000;
+        5:  487:				sprintf(buffer_soc,"%ld",dataPort);
+        5:  488:				strcat(buffer_comm,buffer_soc);
+        5:  489:			        strcat(buffer_comm,"#");
+        -:  490:				//sending the command and data port over the control connection
+        5:  491:				send(sockfd,buffer_comm,sizeof(buffer_comm),PROTOCOL);
+        -:  492:			        //send(sockfd,&dataPort,sizeof(dataPort),PROTOCOL);
+        5:  493:				OBJ.data_connection_receive(dataPort,sockfd,filename);
+        -:  494:			}
+       13:  495:			else if(strcmp(comm,"MPUT") == 0){
+        -:  496:				//going through all the files in the directory 
+        -:  497:				DIR *directory;
+        -:  498:				struct dirent *dir;
+        1:  499:				directory = opendir(PATH);
+       33:  500:				while((dir = readdir(directory)) != NULL){
+       16:  501:				char *fname = dir -> d_name;
+       16:  502:				strcpy(newname,fname);
+       16:  503:				char* fextension = strrchr(newname,'.');  //gettting the file extension
+       16:  504:				if(fextension == NULL) continue;
+       15:  505:				else if(!strcmp(filename,fextension)){  //comparing the extension with the given extension
+        -:  506:                                //sending filename to the server 
+        7:  507:				send(sockfd,newname,BUFFER_SIZE,PROTOCOL);
+        -:  508:                                //generating an arbitrary port number 
+        7:  509:		                unsigned long int dataPort = rand()%1000;
+        7:  510:				memset(buffer_comm,PROTOCOL,sizeof(buffer_comm));//reuse the same buffer after memset 
+        7:  511:				memset(buffer_soc,PROTOCOL,sizeof(buffer_soc));
+        7:  512:				strcpy(buffer_comm,"PUT");
+        7:  513:				strcat(buffer_comm,":");
+        7:  514:                                dataPort = dataPort + (long int)10000;
+        7:  515:				sprintf(buffer_soc,"%ld",dataPort);
+        7:  516:				strcat(buffer_comm,buffer_soc);
+        7:  517:				strcat(buffer_comm,"#");
+        -:  518:				//sending commad	
+        7:  519:				send(sockfd,buffer_comm,sizeof(buffer_comm),PROTOCOL);
+        7:  520:		                OBJ.data_connection_send(dataPort,sockfd,newname);
+        -:  521:				}
+        -:  522:				}
+        1:  523:				closedir(directory);
+        -:  524:			}
+       12:  525:			else if(strcmp(comm,"MGET") == 0){
+        -:  526:				int clientfd;
+        -:  527:				int ready ;
+        -:  528:				//sending file name
+        5:  529:				send(sockfd,filename,BUFFER_SIZE,PROTOCOL);
+        -:  530:                                //generating arbitrary port number
+        5:  531:                                unsigned long int dataPort = rand()%1000;
+        5:  532:                                strcat(buffer_comm,":");
+        5:  533:				dataPort = dataPort + (long int)10000;
+        5:  534:				sprintf(buffer_soc,"%ld",dataPort);
+        5:  535:				strcat(buffer_comm,buffer_soc);
+        5:  536:                                strcat(buffer_comm,"#");
+        -:  537:                                //sending command and port number 
+        5:  538:                                send(sockfd,buffer_comm,sizeof(buffer_comm),PROTOCOL);
+        -:  539:		                char newname[BUFFER_SIZE];
+        5:  540:				memset(buffer_comm,PROTOCOL,sizeof(BUFFER_SIZE));
+        -:  541:				struct sockaddr_in clientAddr;
+        -:  542:                                //creating socket for the control connection
+        5:  543:                                clientfd = socket(AF_INET,SOCK_STREAM,PROTOCOL);
+        5:  544:                                if(clientfd < PROTOCOL){
+    #####:  545:					LOG_ERROR("Error in creating socket for data connection");
+        -:  546:				}
+        5:  547:				memset(&clientAddr,PROTOCOL,sizeof(clientAddr));
+        5:  548:                                clientAddr.sin_family = AF_INET;
+        5:  549:                                clientAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        5:  550:                                clientAddr.sin_port = dataPort;
+        -:  551:                                //binding the socket with the corresponding data port
+        5:  552:                                int binding = bind(clientfd,(struct sockaddr*) &clientAddr,sizeof(clientAddr));
+        5:  553:                                if(binding < PROTOCOL){
+    #####:  554:					LOG_ERROR("Error in binding in MGET");
+        -:  555:				}
+        -:  556:				//listening for the server request
+        5:  557:				int lis = listen(clientfd,LISTEN_SIZE);
+        5:  558:				if(lis < PROTOCOL){
+    #####:  559:					LOG_ERROR("Error in listening in MGET");
+        -:  560:				}
+        -:  561:				struct sockaddr_in serverAddr;
+        5:  562:                                socklen_t length = sizeof(serverAddr);
+        -:  563:                                // accepting the request from the server
+        5:  564:                                int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
+        -:  565:				while(true){
+        -:  566:                                //ready = false implies all files are sent 
+       33:  567:				recv(sockfd,&ready,sizeof(int),PROTOCOL);
+       19:  568:				if(ready == false) break;
+       14:  569:				memset(newname,PROTOCOL,sizeof(newname));
+       14:  570:				recv(sockfd,newname,BUFFER_SIZE,PROTOCOL);
+       14:  571:				OBJ.data_connection_receive_mget(acc,dataPort,sockfd,newname);
+        -:  572:				}
+        5:  573:				close(clientfd);
+        5:  574:				close(acc);
+        5:  575:			        LOG_INFO("File MGET successful");
+        -:  576:			}
+        7:  577:			else if(strcmp(comm,"QUIT")==0)
+        -:  578:			{
+        -:  579:				// strcpy(buffer, "quit");
+        1:  580:                                send(sockfd,filename,BUFFER_SIZE,PROTOCOL);
+        1:  581:                                unsigned long int dataPort = rand()%1000;
+        1:  582:                                strcat(buffer_comm,":");
+        1:  583:                                dataPort = dataPort + (long int)10000;
+        1:  584:				sprintf(buffer_soc,"%ld",dataPort);
+        1:  585:				strcat(buffer_comm,buffer_soc);
+        1:  586:				strcat(buffer_comm,"#");
+        1:  587:				send(sockfd,buffer_comm,sizeof(buffer_comm),PROTOCOL);
+        1:  588:				int status = false;                
+        1:  589:				recv(sockfd, &status, CMD_SIZE, PROTOCOL);
+        1:  590:				if(status)
+        -:  591:				{
+        1:  592:					LOG_INFO("Quitting..");
+        1:  593:					exit(0);
+        -:  594:				}
+    #####:  595:				LOG_ERROR("Server failed to close connection");      
+        -:  596:			}else{
+        6:  597:				LOG_ERROR("command should be in form of GET,PUT,MGET,MPUT");
+        -:  598:			}
+       21:  599:		}
+        -:  600:		}else{
+    #####:  601:			send(sockfd,&LOGIN_CHECK,sizeof(int),PROTOCOL);
+    #####:  602:			LOG_ERROR("client failed to login");
+        -:  603:		}
+        -:  604:	}
+    #####:  605:	return 0;
+        3:  606:}

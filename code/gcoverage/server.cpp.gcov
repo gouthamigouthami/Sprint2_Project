@@ -1,0 +1,316 @@
+        -:    0:Source:server.cpp
+        -:    0:Graph:server.gcno
+        -:    0:Data:server.gcda
+        -:    0:Runs:2
+        -:    0:Programs:1
+        -:    1:#include <errno.h>
+        -:    2:#include <netdb.h>
+        -:    3:#include <sys/types.h>
+        -:    4:#include <sys/socket.h>
+        -:    5:#include <netinet/in.h>
+        -:    6:#include <arpa/inet.h>
+        -:    7:#include <string.h>
+        -:    8:#include <sys/wait.h>
+        -:    9:#include<time.h>
+        -:   10:#include <ifaddrs.h>
+        -:   11:#include<fcntl.h>
+        -:   12:#include <sys/stat.h>
+        -:   13:#include <sys/sendfile.h>
+        -:   14:#include <stdlib.h>
+        -:   15:#include <unistd.h>
+        -:   16:#include <dirent.h>
+        -:   17:#include<iostream>
+        -:   18:#include "server_header.h"
+        -:   19:class server {
+        -:   20:	public:	
+        -:   21:/** dataConnectionsend is for GET operation i.e receiving file from server to client **/
+        5:   22:void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int port, char* filename) {
+        -:   23:	sa clientAddress2;
+        -:   24:	// creating data socket for data connection 
+        5:   25:	int client_data_socket = socket(AF_INET, SOCK_STREAM, PROTOCOL);
+        5:   26:	if(client_data_socket == PROTOCOL) {
+    #####:   27:	  error("Data Socket cannot be opened");
+    #####:   28:		return;
+        -:   29:	}
+        5:   30: 	bzero(&clientAddress2, sizeof(clientAddress2));
+        5:   31:	clientAddress2.sin_family = AF_INET;
+        5:   32:	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
+        5:   33:	clientAddress2.sin_port = port;
+        -:   34:	// sending connect request to the client from the server
+        5:   35:	int status_connect = connect(client_data_socket, (struct sockaddr*) &clientAddress2, sizeof(clientAddress2));
+        5:   36:	if(status_connect < PROTOCOL) {
+    #####:   37:		error("Connection Errorn");
+    #####:   38:		return ;
+        -:   39:	}
+        -:   40:	int filehandle,size; 
+        -:   41:	char file[MAXLEN];
+        -:   42:	struct stat object;
+        5:   43:	strcpy(file,SERVER_PATH);
+        5:   44:	strcat(file,filename);
+        5:   45:	stat(file,&object);
+        5:   46:	filehandle = open(file,O_RDONLY);
+        5:   47:	size = object.st_size;
+        -:   48:	char data[DATA_SIZE];
+        5:   49:	memset(data,PROTOCOL,sizeof(data));
+        -:   50:	// if file doesnt exist
+        5:   51:	if(filehandle == FILEHANDLE) {
+        2:   52:		size = false;
+        2:   53:		sprintf(data,"%d",size);
+        2:   54:		send(client_socket,data,DATA_SIZE,PROTOCOL);
+        -:   55:	} else {
+        -:   56:
+        3:   57:		int overwrite = false;
+        3:   58:		sprintf(data,"%d",size);
+        -:   59:		//sending the size of the file
+        3:   60:		send(client_socket,data,DATA_SIZE,PROTOCOL);
+        -:   61:		// receiving the overwrite option 
+        3:   62:		recv(client_socket,&overwrite,sizeof(int),PROTOCOL);
+        3:   63:		if(overwrite == true) {
+        2:   64:			sendfile(client_data_socket,filehandle,NULL,size);
+        -:   65:		}
+        -:   66:	}
+        -:   67:	//closing socket
+        5:   68:	close(client_data_socket);
+        -:   69:}
+        -:   70:/** dataCnnectiontoSend for receving files from server to client **/
+       14:   71:void dataConnectionSend_mget(int client_data_socket,sa clientAddress,int client_socket, unsigned long int port, char* filename) {
+        -:   72:	int filehandle,size;
+        -:   73:	char file[MAXLEN];
+        -:   74:	struct stat object;
+       14:   75:	strcpy(file,SERVER_PATH);
+       14:   76:	strcat(file,filename);
+       14:   77:	stat(file,&object);
+       14:   78:	filehandle = open(file,O_RDONLY);
+       14:   79:	size = object.st_size;
+        -:   80:	char data[DATA_SIZE];
+       14:   81:	memset(data,PROTOCOL,sizeof(data));
+        -:   82:	//if file doesnt exist	
+       14:   83:	if(filehandle == FILEHANDLE) {
+        8:   84:		size = false;
+        8:   85:		sprintf(data,"%d",size);
+        8:   86:		send(client_socket,data,DATA_SIZE,PROTOCOL);
+        -:   87:	} else {
+        6:   88:		int overwrite = false;
+        6:   89:		sprintf(data,"%d",size);
+        -:   90:		//sending the size of the file
+        6:   91:		send(client_socket,data,DATA_SIZE,PROTOCOL);
+        -:   92:		// receiving the overwrite option
+        6:   93:		recv(client_socket,&overwrite,sizeof(int),PROTOCOL);
+        6:   94:		if(overwrite == true){
+        3:   95:			sendfile(client_data_socket,filehandle,NULL,size);
+        -:   96:		}
+        -:   97:	}
+        -:   98:
+       14:   99:}
+        -:  100:	/* 
+        -:  101:	*dataConnectionReceive is for PUT operation i.e receving files fro client*
+        -:  102:	*/
+       10:  103:void dataConnectionReceive(sa clientAddress,int client_socket, unsigned long int port, char* filename) {
+        -:  104:	sa clientAddress2;
+        -:  105:	// creating data socket for data connection 
+       10:  106:	int client_data_socket = socket(AF_INET,SOCK_STREAM,PROTOCOL);
+       10:  107:	if(client_data_socket == PROTOCOL){
+    #####:  108:		error("Data Socket cannot be opened");
+    #####:  109:		return ;
+        -:  110:	}
+       10:  111: 	bzero(&clientAddress2, sizeof(clientAddress2));
+       10:  112:	clientAddress2.sin_family = AF_INET;
+       10:  113:	clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
+       10:  114:	clientAddress2.sin_port = port;
+        -:  115:	// sending connect request to the client from the server
+       10:  116:	int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
+       10:  117:	if(status_connect<PROTOCOL){ 
+    #####:  118:		error("Connection Error");
+    #####:  119:		return ;
+        -:  120:	}
+        -:  121:	int size,status,filehandle;
+        -:  122:	char *receiveFile;
+        -:  123:	char file[MAXLEN];
+       10:  124:	strcpy(file,SERVER_PATH);
+       10:  125:	strcat(file,filename);
+        -:  126:	int exists, overwrite;
+        -:  127:	// checking if the file already exists or not 
+       10:  128:	if( access( file, F_OK ) != FILEHANDLE){
+        4:  129:        exists = true;
+        4:  130:        send(client_socket,&exists,sizeof(int),PROTOCOL);	
+        -:  131:    } else { 
+        6:  132:        exists = false;
+        6:  133:        send(client_socket,&exists,sizeof(int),PROTOCOL);            
+        -:  134:    }
+       10:  135:    recv(client_socket,&overwrite,sizeof(int),PROTOCOL);  // receving overwrite option 
+        -:  136:	char data[DATA_SIZE];
+       10:  137:	memset(data,PROTOCOL,sizeof(data));
+        -:  138:	// Taking appropriate action according to the overwrite value 
+       10:  139:    if(overwrite == true)
+        -:  140:    {
+        8:  141:    	if(exists == true)
+        2:  142:    		filehandle = open(file, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);     
+        -:  143:    	else
+        6:  144:    		filehandle = open(file, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);     
+        -:  145:
+        -:  146:    	// receving size of the file
+        8:  147:		recv(client_socket,data,DATA_SIZE,PROTOCOL);
+        8:  148:		size = atoi(data);
+        -:  149:		// receving the file and sending status
+        8:  150:                receiveFile = (char*)malloc(size*sizeof(char));
+        8:  151:                recv(client_data_socket, receiveFile, size, PROTOCOL);			
+        8:  152:                status = write(filehandle, receiveFile, size);	
+        8:  153:                close(filehandle);
+        8:  154:                send(client_socket, &status, sizeof(int), PROTOCOL);		
+        -:  155:    }
+        -:  156:
+       10:  157:    close(client_data_socket);
+        -:  158:}
+        -:  159:};
+        2:  160:int main()
+        -:  161:{
+        2:  162:	int login_check = false;
+        -:  163:	server OBJ;
+        2:  164:	int server_socket = socket(AF_INET , SOCK_STREAM , PROTOCOL);
+        -:  165:	//creating a socket and assigning it to the socket handler
+        2:  166:	if(server_socket < PROTOCOL)
+        -:  167:        {
+        -:  168:       // socket methode return -1 if the creation was not successful
+    #####:  169:	error("Socket creation has failed.");
+    #####:  170:		return 0;
+        -:  171:	 }
+        2:  172:         info("Socket Created.");
+        -:  173:	 struct sockaddr_in serverAddress , clientAddress;
+        -:  174:	//specifying address and type for the server to operate under
+        2:  175:	serverAddress.sin_family = AF_INET;
+        2:  176:	serverAddress.sin_port = htons(PORT_1);
+        2:  177:	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+        2:  178:	int bindStatus = bind(server_socket , (struct sockaddr*) & serverAddress , sizeof(serverAddress));
+        2:  179:	if(bindStatus < PROTOCOL) {
+    #####:  180:		error("Socket binding has failed");
+    #####:  181:		return 0;
+        -:  182:	}
+        2:  183:      info("Socket Binding Succesfull"); 
+        -:  184:	//listen to the client while others are waiting in queue of size 5
+        2:  185:	int listenStatus = listen(server_socket , CLIENT_LISTEN );
+        2:  186:	if(listenStatus < PROTOCOL)
+        -:  187:        {	// when queue is full listen fails
+    #####:  188:		error( "Listner has failed");
+    #####:  189:		return 0;
+        -:  190:        }
+        2:  191:	info("Listening");
+        2:  192:	info("...Waiting for connections... ");
+        -:  193:	int client_socket;
+        2:  194:	socklen_t len = sizeof(clientAddress);
+        -:  195:         char buffer[MAXLEN],command[COMMAND_SIZE], filename[FILE_SIZE]; //initiating variables for data buffer,command buffer,file buffer
+        -:  196:	char socket_buffer[MAXLEN];
+        2:  197:	memset(buffer,PROTOCOL,MAXLEN);
+        2:  198:	memset(socket_buffer,PROTOCOL,MAXLEN);
+        2:  199:	if((client_socket = accept(server_socket , (struct sockaddr*) & clientAddress , &len)) < PROTOCOL) {
+    #####:  200:		error( "Server didn't accept the request.") ;
+    #####:  201:		return  0;
+        -:  202:	} else {
+        2:  203:		info( "Server accepted the request. ") ;
+        2:  204:		recv(client_socket,&login_check,sizeof(int),PROTOCOL);
+        2:  205:		if(login_check == true) {
+        1:  206:			info("logined");
+        -:  207:			while(true) {
+        -:  208:				// receiving file name or extension
+       21:  209:		                recv(client_socket,filename,FILE_SIZE,PROTOCOL);
+       21:  210:		                std::cout<<"Received file name : "<<filename<<"\n";
+        -:  211:		                // receiving control information
+       21:  212:		                recv(client_socket,buffer,MAXLEN,PROTOCOL);
+        -:  213:		                int cmd_read ,read_;
+       21:  214:		                int store = 0;
+       90:  215:				for(cmd_read = 0; buffer[cmd_read]!=':'; cmd_read++) {
+       69:  216:					command[store++] = buffer[cmd_read];
+        -:  217:				}
+       21:  218:		                command[store]='\0';
+       21:  219:		                std::cout<<"Received command : "<<command<<std::endl;
+       21:  220:				int check_ = 0;
+        -:  221:				//reading data port
+      126:  222:				for(read_ = cmd_read+1;buffer[read_]!='#';read_++) {
+      105:  223:					socket_buffer[check_++] = buffer[read_];
+        -:  224:				}
+       21:  225:		if(!strcmp(command,"GET")){
+        -:  226:
+        -:  227:			//recv(client_socket,socket_buffer,sizeof(socket_buffer),0);
+        -:  228:			
+        5:  229:			unsigned long int PORT = atoi(socket_buffer);
+        5:  230:			OBJ.dataConnectionSend(clientAddress,client_socket,PORT,filename);
+        5:  231:	  		memset(buffer,PROTOCOL,MAXLEN);
+        5:  232:	  		memset(socket_buffer,PROTOCOL,MAXLEN);
+        -:  233:		}
+       16:  234:		else if(!strcmp(command,"PUT")){
+       10:  235:			unsigned long int PORT = atoi(socket_buffer);
+       10:  236:			OBJ.dataConnectionReceive(clientAddress,client_socket,PORT,filename);
+       10:  237:			memset(buffer,PROTOCOL,MAXLEN);
+       10:  238:			memset(socket_buffer,PROTOCOL,MAXLEN);
+        -:  239:		}
+        6:  240:		else if(!strcmp(command,"MGET")){
+        -:  241:
+        -:  242:
+        5:  243:			unsigned long int PORT = atoi(socket_buffer);
+        -:  244:
+        -:  245:			sa clientAddress2;
+        -:  246:
+        -:  247:			// creating data socket for data connection
+        5:  248:			int client_data_socket= socket(AF_INET,SOCK_STREAM,PROTOCOL);
+        5:  249:			if(client_data_socket==PROTOCOL){
+    #####:  250:				error("Data Socket cannot be opened");
+        -:  251:			}
+        -:  252:
+        5:  253:		 	bzero(&clientAddress2, sizeof(clientAddress2));
+        -:  254:
+        -:  255:
+        5:  256:			clientAddress2.sin_family = AF_INET;
+        5:  257:			clientAddress2.sin_addr.s_addr = clientAddress.sin_addr.s_addr;
+        5:  258:			clientAddress2.sin_port = PORT;
+        -:  259:			
+        -:  260:			// sending connect request to the client 
+        5:  261:			int status_connect = connect(client_data_socket,(struct sockaddr*) &clientAddress2,sizeof(clientAddress2));
+        -:  262:			
+        5:  263:			if(status_connect < PROTOCOL){
+    #####:  264:				error("Connection Error");
+        -:  265:			}
+        -:  266:			// traversing through the directory for the files with given extension 
+        -:  267:			char *fname;
+        -:  268:			//creating poineter variable for directory
+        -:  269:			 DIR *directory;
+        -:  270:	                 struct dirent *dir;
+        5:  271:	                 directory = opendir(SERVER_PATH);
+        5:  272:	                int ready = true;
+        -:  273:			char newname[FILE_SIZE];
+      125:  274:			while((dir = readdir(directory)) != NULL){
+       60:  275:				fname=dir->d_name;
+       60:  276:				memset(newname,PROTOCOL,sizeof(newname));
+       60:  277:	                        strcpy(newname,fname);
+       60:  278:				char* fextension = strrchr(newname, '.'); // getting the extension of the files
+       60:  279:				if(fextension == NULL) continue;
+       55:  280:				if (strcmp(filename,fextension) == PROTOCOL){   // comparing the externsion with the given extension
+       14:  281:					std::cout<<"Sending " << newname<<"file\n";
+       14:  282:	                                send(client_socket, &ready, sizeof(int), PROTOCOL);
+       14:  283:	                                send(client_socket,newname,FILE_SIZE,PROTOCOL);
+       14:  284:					OBJ.dataConnectionSend_mget(client_data_socket,clientAddress,client_socket,PORT,newname);
+        -:  285:				}
+        -:  286:			}
+        5:  287:			ready = false;
+        5:  288:			send(client_socket,&ready,sizeof(int),PROTOCOL);
+        5:  289:			closedir(directory);
+        5:  290:			memset(buffer,PROTOCOL,sizeof(buffer));
+        5:  291:			close(client_data_socket);
+        -:  292:		}
+        1:  293:		 else if(!strcmp(command, "QUIT"))
+        -:  294:	        {
+        -:  295:	           
+        1:  296:		    info("Quitting....");
+        1:  297:	            send(client_socket, &cmd_read, sizeof(int), PROTOCOL);           
+        2:  298:	            break;
+        -:  299:	        }
+        -:  300:
+       20:  301:	}
+        -:  302:
+        -:  303:}
+        -:  304:	       
+        -:  305:else{
+        1:  306:	error("NOt loggined unable to proceed any file downloads");
+        -:  307:}
+        -:  308:
+        -:  309:}
+        2:  310: return 0;
+        6:  311:}
