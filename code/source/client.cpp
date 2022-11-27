@@ -313,9 +313,9 @@ loop:
 		   send(sockfd,&overwrite,sizeof(int),0);
 		   if(overwrite == true){
 			   if(already_exist==true)
-				   filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, 644);
+				   filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);
 			   else
-				   filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, 666);
+				   filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);
 			   char *receive_file = (char*)malloc(size*sizeof(char));
 			   // receving the size of the file
 			   recv(acc, receive_file, size, PROTOCOL);
