@@ -17,6 +17,8 @@
 #define BUFFER_SIZE 20
 #define LISTEN_SIZE 20
 #define PROTOCOL 0
+#define permission 644
+#define permission1 666
 #define FILEHANDLE -1
 #define PATH "./client_files/"
 #include "../include/Logger.h"
