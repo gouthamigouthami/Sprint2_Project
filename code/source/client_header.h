@@ -2,7 +2,7 @@
 #define __client_header_H__
 
 #define MAX 500
-#define PORT 9001
+#define PORT 9090
 #define MAXIMUM_NAME 25
 #define MAXIMUM_PSW 25
 #define MAXIMUM_PH_NO 25
