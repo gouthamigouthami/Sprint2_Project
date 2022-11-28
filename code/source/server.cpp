@@ -23,7 +23,7 @@ void dataConnectionSend(sa clientAddress,int client_socket, unsigned long int po
 	sa clientAddress2;
 	// creating data socket for data connection 
 	int client_data_socket = socket(AF_INET, SOCK_STREAM, PROTOCOL);
-	if(client_data_socket == PROTOCOL) {
+	if(client_data_socket < PROTOCOL) {
 	  error("Data Socket cannot be opened");
 		return;
 	}
