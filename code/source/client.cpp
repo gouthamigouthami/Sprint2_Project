@@ -363,47 +363,48 @@ void data_connection_receive(unsigned long int dataPort,int sockfd,char* filenam
         socklen_t length = sizeof(serverAddr);
         // accepting the request from the server
         int acc = accept(clientfd,(struct sockaddr*) &serverAddr,&length);
+	
 	int size,filehandle,status;
         int already_exist = false,overwrite = true;
         char filename_path[FILEPATH_SIZE];
+	char data[DATA_SIZE];
         strcpy(filename_path,PATH);
         strcat(filename_path,filename);
-        char data[DATA_SIZE];
 	memset(data,PROTOCOL,sizeof(data));
-        //receiving file 
-	recv(sockfd,data,DATA_SIZE,0);
-	size = atoi(data);
+        //recv(sockfd,&size,sizeof(int),0);
+        recv(sockfd,data,DATA_SIZE,PROTOCOL);
+        size = atoi(data);
 	if(size){
-        //checking the file already exists or not 
-	if(access(filename_path, F_OK) != FILEHANDLE){
-		already_exist = true;
-		std::cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
-repeat:
-	    
-		std::cin>>overwrite;
-		if(overwrite != 0 && overwrite != 1){
-			LOG_ERROR("Invalid type 0 or 1");
-                        goto repeat;
-		}
-	}
-	// sending the overwrite option to the server over control connection 
-	send(sockfd,&overwrite,sizeof(int),PROTOCOL);
-	if(overwrite == true){
-		if(already_exist==true)
-			filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, 644);
-        	else
-        		filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, 0666);
-		char *receive_file = (char*)malloc(size*sizeof(char)); 
-                recv(acc, receive_file, size, PROTOCOL);  //receving the file
-                status=write(filehandle, receive_file, size);
-                close(filehandle);
-                if(status){
-			LOG_INFO("File successful GET in the server");
-		}
-		else LOG_ERROR("File not GET successfully in the server");
-	}
+		// checking whether the file already exists or not 
+		   if(access(filename_path, F_OK) != FILEHANDLE){
+			   already_exist = true;
+			   std::cout<<filename<<" file already exists in server \n press 1 for OVERWRITE \n press 0 for NO OVERWRITE\n";
+loop:
+			   std::cin>>overwrite;
+			   if(overwrite != 0 && overwrite != 1){
+				   LOG_ERROR("Invalid type 0 or 1");
+				   goto loop;
+			   }
+		   }
+		   // sending the overwrite option 
+		   send(sockfd,&overwrite,sizeof(int),0);
+		   if(overwrite == true){
+			   if(already_exist==true)
+				   filehandle = open(filename_path, O_WRONLY | O_CREAT | O_TRUNC, PERMISSION);
+			   else
+				   filehandle = open(filename_path, O_CREAT | O_EXCL | O_WRONLY, PERMISSION1);
+			   char *receive_file = (char*)malloc(size*sizeof(char));
+			   // receving the size of the file
+			   recv(acc, receive_file, size, PROTOCOL);
+			   status=write(filehandle, receive_file, size);
+			   close(filehandle);
+			   if(status){
+				   LOG_INFO("File successful GET in the server");
+			   }
+			   else LOG_ERROR("File not GET successfully in the server");
+		   }
 	}else{
-		LOG_INFO("No such file exists in server");
+		LOG_ERROR("No such file exists in server");
 	}
 	close(clientfd);
         close(acc);
